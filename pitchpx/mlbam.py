@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import click
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
@@ -15,15 +16,44 @@ __author__ = 'Shinichi Nakagawa'
 
 class MlbAm(object):
 
+    DELIMITER = '/'
     DATE_FORMAT = '%Y%m%d'
+    DIRECTORY_PATH_GAME_DAY = '{year}_{month}_{day}'
+    PAGE_URL_GAME_DAY = 'year_{year}/month_{month}/day_{day}/'
+    PAGE_URL_GAME_PREFIX = 'gid_{year}_{month}_{day}_.*'
 
     def __init__(self, base_dir, setting_file='setting.yml'):
-        self.setting = yaml.load(open('/'.join([base_dir, setting_file]), 'r'))
-        self.output_dir = '/'.join([base_dir, self.setting['mlb']['output_dir']])
-        self.html = BeautifulSoup(urlopen(self.setting['mlb']['url']), self.setting['config']['xml_parser'])
+        setting = yaml.load(open(self.DELIMITER.join([base_dir, setting_file]), 'r'))
+        self.output_dir = self.DELIMITER.join([base_dir, setting['mlb']['output_dir']])
+        self.url = setting['mlb']['url']
+        self.parser = setting['config']['xml_parser']
 
-    def get(self, ):
+    def _download_game(self, ):
         pass
+
+    def download(self, timestamp: dt):
+        """
+        download MLBAM Game Day
+        :param timestamp:
+        :return:
+        """
+        timestamp_params = {
+            'year': str(timestamp.year),
+            'month': str(timestamp.month).zfill(2),
+            'day': str(timestamp.day).zfill(2)
+        }
+        base_url = self.DELIMITER.join([self.url, self.PAGE_URL_GAME_DAY.format(**timestamp_params)])
+        html = BeautifulSoup(urlopen(base_url), self.parser)
+
+        base_directory = self.DELIMITER.join([self.output_dir, self.DIRECTORY_PATH_GAME_DAY.format(**timestamp_params)])
+        href = self.PAGE_URL_GAME_PREFIX.format(**timestamp_params)
+        for game in html.find_all('a', href=re.compile(href)):
+            game_path = game.get_text().strip()
+            game_url = self.DELIMITER.join([base_url, game_path])
+            game_directory = self.DELIMITER.join([base_directory, game_path])
+            game_html = BeautifulSoup(urlopen(game_url), self.parser)
+            # os.makedirs(game_directory)
+            print(game_directory)
 
     @classmethod
     def _validate_datetime(cls, value):
@@ -49,6 +79,23 @@ class MlbAm(object):
             raise MlbAmBadParameter("not Start Day({start}) <= End Day({end})".format(start=start, end=end))
 
     @classmethod
+    def _days(cls, start, end):
+        """
+        Scrape a MLBAM Data
+        :param start: Start Day(YYYYMMDD)
+        :param end: End Day(YYYYMMDD)
+        """
+        days = []
+        # datetime
+        start_day, end_day = dt.strptime(start, cls.DATE_FORMAT), dt.strptime(end, cls.DATE_FORMAT)
+        delta = end_day - start_day
+
+        for day in range(delta.days+1):
+            days.append(start_day + timedelta(days=day))
+
+        return days
+
+    @classmethod
     def scrape(cls, start, end):
         """
         Scrape a MLBAM Data
@@ -64,17 +111,12 @@ class MlbAm(object):
                 raise MlbAmException('{msg} a {name}.'.format(name=param_day['name'], msg=e.msg))
         cls._validate_datetime_from_to(start, end)
 
-        # datetime
-        start_day, end_day = dt.strptime(start, cls.DATE_FORMAT), dt.strptime(end, cls.DATE_FORMAT)
-        delta = end_day - start_day
-
-        # TODO 並列化に備えてここで日付リストをとっておく
-        days = []
-        for day in range(delta.days+1):
-            days.append(start_day + timedelta(days=day))
+        days = cls._days(start, end)
 
         mlb = MlbAm(os.path.dirname(os.path.abspath('.')))
-        mlb.get()
+        # TODO ここは並列化する
+        for day in days:
+            mlb.download(day)
 
 
 class MlbAmException(Exception):
