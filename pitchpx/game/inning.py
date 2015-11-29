@@ -23,8 +23,8 @@ class Inning(object):
         :return: pitchpx.game.game.Game object
         """
         innings = []
-        base_url = "/".join([url, cls.DIRECTORY])
+        base_url = "".join([url, cls.DIRECTORY])
         for inning in MlbamUtil.find_xml_all(base_url, markup, cls.TAG, cls.FILENAME_PATTERN):
-            soup = MlbamUtil.find_xml("".join([base_url, inning.get_text().strip()]), markup)
+            soup = MlbamUtil.find_xml("/".join([base_url, inning.get_text().strip()]), markup)
             print(soup)
         return innings
