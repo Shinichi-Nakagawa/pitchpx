@@ -11,6 +11,10 @@ from datetime import datetime as dt
 from datetime import timedelta
 import yaml
 
+from pitchpx.game.game import Game
+from pitchpx.game.players import Players
+from pitchpx.game.inning import Inning
+
 __author__ = 'Shinichi Nakagawa'
 
 
@@ -19,7 +23,7 @@ class MlbAm(object):
     DELIMITER = '/'
     DATE_FORMAT = '%Y%m%d'
     DIRECTORY_PATH_GAME_DAY = '{year}_{month}_{day}'
-    PAGE_URL_GAME_DAY = 'year_{year}/month_{month}/day_{day}/'
+    PAGE_URL_GAME_DAY = 'year_{year}/month_{month}/day_{day}'
     PAGE_URL_GAME_PREFIX = 'gid_{year}_{month}_{day}_.*'
 
     def __init__(self, base_dir, setting_file='setting.yml'):
@@ -45,15 +49,15 @@ class MlbAm(object):
         base_url = self.DELIMITER.join([self.url, self.PAGE_URL_GAME_DAY.format(**timestamp_params)])
         html = BeautifulSoup(urlopen(base_url), self.parser)
 
-        base_directory = self.DELIMITER.join([self.output_dir, self.DIRECTORY_PATH_GAME_DAY.format(**timestamp_params)])
         href = self.PAGE_URL_GAME_PREFIX.format(**timestamp_params)
-        for game in html.find_all('a', href=re.compile(href)):
-            game_path = game.get_text().strip()
-            game_url = self.DELIMITER.join([base_url, game_path])
-            game_directory = self.DELIMITER.join([base_directory, game_path])
-            game_html = BeautifulSoup(urlopen(game_url), self.parser)
-            # os.makedirs(game_directory)
-            print(game_directory)
+        for gid in html.find_all('a', href=re.compile(href)):
+            gid_path = gid.get_text().strip()
+            gid_url = self.DELIMITER.join([base_url, gid_path])
+            game = Game.read_xml(gid_url, self.parser)
+            players = Players.read_xml(gid_url, self.parser)
+            innings = Inning.read_xml(gid_url, self.parser, game, players)
+            # TODO Inning(in:player, game)
+            # TODO writing csv
 
     @classmethod
     def _validate_datetime(cls, value):
