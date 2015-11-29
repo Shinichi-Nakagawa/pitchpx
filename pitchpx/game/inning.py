@@ -5,5 +5,5 @@ __author__ = 'Shinichi Nakagawa'
 
 
 class Inning(object):
-    directory = 'inning'
-    filename_pattern = 'inning_\d*.xml'
+    DIRECTORY = 'inning'
+    FILENAME_PATTERN = 'inning_\d*.xml'

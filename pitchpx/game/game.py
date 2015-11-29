@@ -5,4 +5,4 @@ __author__ = 'Shinichi Nakagawa'
 
 
 class Game(object):
-    filename = 'game.xml'
+    FILENAME = 'game.xml'
