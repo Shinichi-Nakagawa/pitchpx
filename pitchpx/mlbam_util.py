@@ -31,3 +31,11 @@ class MlbamUtil(object):
         :return: BeautifulSoup object list
         """
         return BeautifulSoup(urlopen(url), markup).find_all(tag, href=re.compile(pattern))
+
+
+class MlbamConst(object):
+
+    UNKNOWN_FULL = 'Unknown'
+    UNKNOWN_SHORT = 'U'
+    FLG_TRUE = 'T'
+    FLG_FALSE = 'F'

@@ -53,10 +53,14 @@ class MlbAm(object):
         for gid in html.find_all('a', href=re.compile(href)):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
-            game = Game.read_xml(gid_url, self.parser)
-            players = Players.read_xml(gid_url, self.parser)
-            innings = Inning.read_xml(gid_url, self.parser, game, players)
-            # TODO Inning(in:player, game)
+            # TODO game number
+            if type(gid_path[len(gid_path)-2:len(gid_path)-1]) == type(int(1)):
+                game_number = gid_path[len(gid_path)-2:len(gid_path)-1]
+            else:
+                game_number = 1
+            game = Game.read_xml(gid_url, self.parser, timestamp, game_number)
+            # players = Players.read_xml(gid_url, self.parser)
+            # innings = Inning.read_xml(gid_url, self.parser, game, players)
             # TODO writing csv
 
     @classmethod
