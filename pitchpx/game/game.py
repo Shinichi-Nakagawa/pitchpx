@@ -8,6 +8,9 @@ __author__ = 'Shinichi Nakagawa'
 
 
 class Game(object):
+    """
+    MLBAM Game Data
+    """
     FILENAME = 'game.xml'
     TEAM_TYPE_HOME = 'home'
     TEAM_TYPE_AWAY = 'away'
