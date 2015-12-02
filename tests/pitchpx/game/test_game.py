@@ -78,6 +78,26 @@ class TestGame(TestCase):
         self.assertEqual(Game._get_regseason_fl('L'), 'F')
         self.assertEqual(Game._get_playoff_fl('L'), 'T')
 
+    def test_interleague(self):
+        """
+        inter league
+        """
+        self.assertEqual(Game._get_interleague_fl('AL', 'NL'), 'T')
+
+    def test_not_interleague(self):
+        """
+        inter league(not)
+        """
+        self.assertEqual(Game._get_interleague_fl('AL', 'AL'), 'F')
+        self.assertEqual(Game._get_interleague_fl('NL', 'NL'), 'F')
+
+    def test_unknown_interleague(self):
+        """
+        inter league(unknown)
+        """
+        self.assertEqual(Game._get_interleague_fl('AL', 'U'), 'U')
+        self.assertEqual(Game._get_interleague_fl('U', 'NL'), 'U')
+
     def tearDown(self):
         pass
 
