@@ -77,9 +77,9 @@ class Game(object):
         game.interleague_fl = cls._get_interleague_fl(game.home_team_lg, game.away_team_lg)
 
         # Stadium Data
-        game.park_id = soup.stadium["id"]
-        game.park_name = soup.stadium["name"]
-        game.park_loc = soup.stadium["location"]
+        game.park_id = cls._get_stadium_attribute(soup, 'id')
+        game.park_name = cls._get_stadium_attribute(soup, 'name')
+        game.park_loc = cls._get_stadium_attribute(soup, 'location')
 
         # Retro ID
         game.retro_game_id = cls._get_retro_id(game.home_team_id, timestamp, game_number)

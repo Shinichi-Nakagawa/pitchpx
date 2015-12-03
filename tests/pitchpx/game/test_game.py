@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
 from bs4 import BeautifulSoup
+from datetime import datetime as dt
 from unittest import TestCase, main
 from pitchpx.game.game import Game
 
@@ -33,6 +32,7 @@ class TestGame(TestCase):
 
     def tearDown(self):
         self.game = None
+        self.dummy = None
 
     def test_spring_training(self):
         """
@@ -150,6 +150,14 @@ class TestGame(TestCase):
         self.assertEqual(Game._get_stadium_attribute(self.dummy, 'id'), 'Unknown')
         self.assertEqual(Game._get_stadium_attribute(self.dummy, 'name'), 'Unknown')
         self.assertEqual(Game._get_stadium_attribute(self.dummy, 'location'), 'Unknown')
+
+    def test_retro_id(self):
+        """
+        Retro ID
+        """
+        self.assertEqual(Game._get_retro_id('SEA', dt.strptime('2015-08-12', '%Y-%m-%d'), 1), 'SEA201508120')
+        self.assertEqual(Game._get_retro_id('OAK', dt.strptime('2015-04-03', '%Y-%m-%d'), 2), 'OAK201504031')
+        self.assertEqual(Game._get_retro_id('MIA', dt.strptime('2015-10-01', '%Y-%m-%d'), 3), 'MIA201510012')
 
 if __name__ == '__main__':
     main()
