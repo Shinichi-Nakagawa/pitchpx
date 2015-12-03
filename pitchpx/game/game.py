@@ -70,18 +70,16 @@ class Game(object):
         game.game_id = cls._get_attribute(soup, 'game_pk', attrs, unknown=MlbamConst.UNKNOWN_FULL)
 
         # Team Data
-        if soup.find("team"):
-            game.home_team_id = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'code')
-            game.home_team_lg = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'league')
-            game.away_team_id = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'code')
-            game.away_team_lg = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'league')
+        game.home_team_id = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'code')
+        game.home_team_lg = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'league')
+        game.away_team_id = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'code')
+        game.away_team_lg = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'league')
         game.interleague_fl = cls._get_interleague_fl(game.home_team_lg, game.away_team_lg)
 
         # Stadium Data
-        if soup.find("stadium"):
-            game.park_id = soup.stadium["id"]
-            game.park_name = soup.stadium["name"]
-            game.park_loc = soup.stadium["location"]
+        game.park_id = soup.stadium["id"]
+        game.park_name = soup.stadium["name"]
+        game.park_loc = soup.stadium["location"]
 
         # Retro ID
         game.retro_game_id = cls._get_retro_id(game.home_team_id, timestamp, game_number)
@@ -164,7 +162,21 @@ class Game(object):
         :param name: attribute name
         :return: attribute value
         """
-        return soup.find("team", type=team_type)[name]
+        if soup.find('team'):
+            return soup.find("team", type=team_type)[name]
+        return MlbamConst.UNKNOWN_FULL
+
+    @classmethod
+    def _get_stadium_attribute(cls, soup, name):
+        """
+        get stadium attribute
+        :param soup: Beautifulsoup object
+        :param name: attribute name
+        :return: attribute value
+        """
+        if soup.find('stadium'):
+            return soup.stadium[name]
+        return MlbamConst.UNKNOWN_FULL
 
     @classmethod
     def _get_interleague_fl(cls, home_team_lg, away_team_lg):

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+from bs4 import BeautifulSoup
 from unittest import TestCase, main
 from pitchpx.game.game import Game
 
@@ -11,9 +13,26 @@ class TestGame(TestCase):
     """
     MLBAM Game Data testing(game.xml)
     """
+    GAME_XML = """
+    <game type="R" local_game_time="12:40" game_pk="415346" game_time_et="03:40 PM" gameday_sw="P">
+	    <team type="home" code="sea" file_code="sea" abbrev="SEA" id="136" name="Seattle" name_full="Seattle Mariners" name_brief="Mariners" w="54" l="61" division_id="200" league_id="103" league="AL"/>
+	    <team type="away" code="bal" file_code="bal" abbrev="BAL" id="110" name="Baltimore" name_full="Baltimore Orioles" name_brief="Orioles" w="57" l="56" division_id="201" league_id="103" league="AL"/>
+	    <stadium id="680" name="Safeco Field" venue_w_chan_loc="USWA0395" location="Seattle, WA"/>
+    """
+    DUMMY_XML = """
+    <game>
+	    <hoge type="home" code="sea" file_code="sea" abbrev="SEA" id="136" name="Seattle" name_full="Seattle Mariners" name_brief="Mariners" w="54" l="61" division_id="200" league_id="103" league="AL"/>
+	    <hoge type="away" code="bal" file_code="bal" abbrev="BAL" id="110" name="Baltimore" name_full="Baltimore Orioles" name_brief="Orioles" w="57" l="56" division_id="201" league_id="103" league="AL"/>
+	    <fuga id="680" name="Safeco Field" venue_w_chan_loc="USWA0395" location="Seattle, WA"/>
+    </game>
+    """
 
     def setUp(self):
-        pass
+        self.game = BeautifulSoup(TestGame.GAME_XML, 'lxml')
+        self.dummy = BeautifulSoup(TestGame.DUMMY_XML, 'lxml')
+
+    def tearDown(self):
+        self.game = None
 
     def test_spring_training(self):
         """
@@ -98,8 +117,39 @@ class TestGame(TestCase):
         self.assertEqual(Game._get_interleague_fl('AL', 'U'), 'U')
         self.assertEqual(Game._get_interleague_fl('U', 'NL'), 'U')
 
-    def tearDown(self):
-        pass
+    def test_team_attributes_exists(self):
+        """
+        Team attributes Data
+        """
+        self.assertEqual(Game._get_team_attribute(self.game, 'home', 'code'), 'sea')
+        self.assertEqual(Game._get_team_attribute(self.game, 'away', 'code'), 'bal')
+        self.assertEqual(Game._get_team_attribute(self.game, 'home', 'league'), 'AL')
+        self.assertEqual(Game._get_team_attribute(self.game, 'away', 'league'), 'AL')
+
+    def test_team_stadium_exists(self):
+        """
+        Stadium Data
+        """
+        self.assertEqual(Game._get_stadium_attribute(self.game, 'id'), '680')
+        self.assertEqual(Game._get_stadium_attribute(self.game, 'name'), 'Safeco Field')
+        self.assertEqual(Game._get_stadium_attribute(self.game, 'location'), 'Seattle, WA')
+
+    def test_team_attributes_not_exists(self):
+        """
+        Team attributes Data(not exists)
+        """
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'home', 'code'), 'Unknown')
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'away', 'code'), 'Unknown')
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'home', 'league'), 'Unknown')
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'away', 'league'), 'Unknown')
+
+    def test_team_stadium_not_exists(self):
+        """
+        Stadium Data(not exists)
+        """
+        self.assertEqual(Game._get_stadium_attribute(self.dummy, 'id'), 'Unknown')
+        self.assertEqual(Game._get_stadium_attribute(self.dummy, 'name'), 'Unknown')
+        self.assertEqual(Game._get_stadium_attribute(self.dummy, 'location'), 'Unknown')
 
 if __name__ == '__main__':
     main()
