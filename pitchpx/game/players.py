@@ -8,19 +8,34 @@ from pitchpx.game.game import Game
 __author__ = 'Shinichi Nakagawa'
 
 
-class Player(object):
+class YakyuMin(object):
     """
-    Player's Data(Pitcher/Batter)
+    Baseball people(Japanese "やきう民")
     """
-
     id = MlbamConst.UNKNOWN_FULL
     first = MlbamConst.UNKNOWN_FULL
     last = MlbamConst.UNKNOWN_FULL
+    position = MlbamConst.UNKNOWN_SHORT
+
+    def __init__(self, soup):
+        """
+        create object
+        :param soup: Beautifulsoup object
+        """
+        self.id = soup['id']
+        self.first = soup['first']
+        self.last = soup['last']
+        self.position = soup['position']
+
+
+class Player(YakyuMin):
+    """
+    Player's Data(Pitcher/Batter)
+    """
     num = MlbamConst.UNKNOWN_FULL
     box_name = MlbamConst.UNKNOWN_FULL
     rl = MlbamConst.UNKNOWN_SHORT
     bats = MlbamConst.UNKNOWN_SHORT
-    position = MlbamConst.UNKNOWN_SHORT
     status = MlbamConst.UNKNOWN_FULL
     team_abbrev = MlbamConst.UNKNOWN_FULL
     team_id = MlbamConst.UNKNOWN_FULL
@@ -38,14 +53,11 @@ class Player(object):
         create object
         :param soup: Beautifulsoup object
         """
-        self.id = soup['id']
-        self.first = soup['first']
-        self.last = soup['last']
+        super().__init__(soup)
         self.num = int(soup['num'])
         self.box_name = soup['boxname']
         self.rl = soup['rl']
         self.bats = soup['bats']
-        self.position = soup['position']
         self.status = soup['status']
         self.team_abbrev = soup['team_abbrev']
         self.team_id = soup['team_id']
@@ -65,26 +77,42 @@ class Player(object):
             self.era = float(soup['era'])
 
 
-class Coach(object):
+class Coach(YakyuMin):
     """
     Coach Data
     """
-    pass
+    num = MlbamConst.UNKNOWN_FULL
+
+    def __init__(self, soup):
+        """
+        create object
+        :param soup: Beautifulsoup object
+        """
+        super().__init__(soup)
+        self.num = int(soup['num'])
 
 
-class Umpire(object):
+class Umpire(YakyuMin):
     """
     Umpire Data
     """
-    pass
+    name = MlbamConst.UNKNOWN_FULL
+
+    def __init__(self, soup):
+        """
+        create object
+        :param soup: Beautifulsoup object
+        """
+        super().__init__(soup)
+        self.name = soup['name']
 
 
 class Players(object):
 
     FILENAME = 'players.xml'
-    rosters = {}
-    umpires = {}
-    coaches = {}
+    rosters = {}  # key: player id value: Player object
+    umpires = {}  # key: umpire id value: Umpire object
+    coaches = {}  # key: coache id value: Coache object
     home_team = None
     away_team = None
     game = None
@@ -131,7 +159,12 @@ class Players(object):
                 # team data(away)
                 players.away_team = cls._get_team(team)
             # player data
-            players.rosters.update(cls._get_players(team))
+            players.rosters.update({player['id']: Player(player) for player in team.find_all('player')})
+            # coach data
+            players.coaches.update({coach['id']: Coach(coach) for coach in team.find_all('coach')})
+        # umpire data
+        umpires = soup.find('umpires')
+        players.umpires.update({umpire['id']: Umpire(umpire) for umpire in umpires.find_all('umpire')})
         return players
 
     @classmethod
@@ -146,18 +179,6 @@ class Players(object):
         team.id = soup['id']
         team.name = soup['name']
         return team
-
-    @classmethod
-    def _get_players(cls, soup):
-        """
-        get player list
-        :param soup: Beautifulsoup object
-        :return: pitchpx.game.players.Player list
-        """
-        players = {}
-        for player in (soup.find_all('player')):
-            players[player['id']] = Player(player)
-        return players
 
 
 # TODO デバッグ用、後で消す
