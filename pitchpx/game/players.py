@@ -82,14 +82,19 @@ class Coach(YakyuMin):
     Coach Data
     """
     num = MlbamConst.UNKNOWN_FULL
+    team_id = MlbamConst.UNKNOWN_SHORT
+    team_name = MlbamConst.UNKNOWN_FULL
 
-    def __init__(self, soup):
+    def __init__(self, soup, team):
         """
         create object
         :param soup: Beautifulsoup object
+        :param team: Team object
         """
         super().__init__(soup)
         self.num = int(soup['num'])
+        self.team_id = team.id
+        self.team_name = team.name
 
 
 class Umpire(YakyuMin):
@@ -152,16 +157,17 @@ class Players(object):
         players.game.date = soup.game['date']
         # players & team data
         for team in soup.find_all('team'):
+            team_object = cls._get_team(team)
             if team['type'] == Game.TEAM_TYPE_HOME:
                 # team data(home)
-                players.home_team = cls._get_team(team)
+                players.home_team = team_object
             elif team['type'] == Game.TEAM_TYPE_AWAY:
                 # team data(away)
-                players.away_team = cls._get_team(team)
+                players.away_team = team_object
             # player data
             players.rosters.update({player['id']: Player(player) for player in team.find_all('player')})
             # coach data
-            players.coaches.update({coach['id']: Coach(coach) for coach in team.find_all('coach')})
+            players.coaches.update({coach['id']: Coach(coach, team_object) for coach in team.find_all('coach')})
         # umpire data
         umpires = soup.find('umpires')
         players.umpires.update({umpire['id']: Umpire(umpire) for umpire in umpires.find_all('umpire')})
@@ -184,6 +190,3 @@ class Players(object):
 # TODO デバッグ用、後で消す
 if __name__ == '__main__':
     players = Players.read_xml('http://gd2.mlb.com/components/game/mlb/year_2015/month_08/day_12/gid_2015_08_12_balmlb_seamlb_1', 'lxml')
-    print(players.players)
-    print(players.umpires)
-    print(players.coaches)
