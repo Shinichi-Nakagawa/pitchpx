@@ -71,6 +71,8 @@ class Players(object):
         wins = 0
         losses = 0
         era = 0.0
+        bat_order = MlbamConst.UNKNOWN_SHORT
+        game_position = MlbamConst.UNKNOWN_SHORT
 
         def __init__(self, soup):
             """
@@ -99,6 +101,10 @@ class Players(object):
                 self.losses = int(soup['losses'])
             if 'era' in soup.attrs:
                 self.era = float(soup['era'])
+            if 'bat_order' in soup.attrs:
+                self.bat_order = int(soup['bat_order'])
+            if 'game_position' in soup.attrs:
+                self.game_position = soup['game_position']
 
     class Coach(YakyuMin):
         """
@@ -181,8 +187,3 @@ class Players(object):
         team.id = soup['id']
         team.name = soup['name']
         return team
-
-
-# TODO デバッグ用、後で消す
-if __name__ == '__main__':
-    players = Players.read_xml('http://gd2.mlb.com/components/game/mlb/year_2015/month_08/day_12/gid_2015_08_12_balmlb_seamlb_1', 'lxml')
