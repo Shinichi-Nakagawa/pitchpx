@@ -57,8 +57,7 @@ class MlbAm(object):
             game_number = self._get_game_number(gid_path)
             game = Game.read_xml(gid_url, self.parser, timestamp, game_number)
             players = Players.read_xml(gid_url, self.parser)
-            print('get Game & Players')
-            # innings = Inning.read_xml(gid_url, self.parser, game, players)
+            innings = Inning.read_xml(gid_url, self.parser, game, players)
             # TODO writing csv
 
     @classmethod
