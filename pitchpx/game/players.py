@@ -80,7 +80,8 @@ class Players(object):
             :param soup: Beautifulsoup object
             """
             super().__init__(soup)
-            self.num = int(soup['num'])
+            if Players.isdigit(soup['num']):
+                self.num = int(soup['num'])
             self.box_name = soup['boxname']
             self.rl = soup['rl']
             self.bats = soup['bats']
@@ -89,19 +90,19 @@ class Players(object):
             self.team_id = soup['team_id']
             self.parent_team_abbrev = soup['parent_team_abbrev']
             self.parent_team_id = soup['parent_team_id']
-            if 'avg' in soup.attrs:
+            if 'avg' in soup.attrs and Players.isdigit(soup['avg']):
                 self.avg = float(soup['avg'])
-            if 'hr' in soup.attrs:
+            if 'hr' in soup.attrs and Players.isdigit(soup['hr']):
                 self.hr = int(soup['hr'])
-            if 'rbi' in soup.attrs:
+            if 'rbi' in soup.attrs and Players.isdigit(soup['rbi']):
                 self.rbi = int(soup['rbi'])
-            if 'wins' in soup.attrs:
+            if 'wins' in soup.attrs and Players.isdigit(soup['wins']):
                 self.wins = int(soup['wins'])
-            if 'losses' in soup.attrs:
+            if 'losses' in soup.attrs and Players.isdigit(soup['losses']):
                 self.losses = int(soup['losses'])
-            if 'era' in soup.attrs:
+            if 'era' in soup.attrs and Players.isdigit(soup['era']):
                 self.era = float(soup['era'])
-            if 'bat_order' in soup.attrs:
+            if 'bat_order' in soup.attrs and Players.isdigit(soup['bat_order']):
                 self.bat_order = int(soup['bat_order'])
             if 'game_position' in soup.attrs:
                 self.game_position = soup['game_position']
@@ -121,7 +122,8 @@ class Players(object):
             :param team: Team object
             """
             super().__init__(soup)
-            self.num = int(soup['num'])
+            if Players.isdigit(soup['num']):
+                self.num = int(soup['num'])
             self.team_id = team.id
             self.team_name = team.name
 
@@ -187,3 +189,14 @@ class Players(object):
         team.id = soup['id']
         team.name = soup['name']
         return team
+
+    @classmethod
+    def isdigit(cls, value):
+        """
+        ditit check for stats
+        :param value: stats value
+        :return: True or False
+        """
+        if str(value).replace('.','').replace('-','').isdigit():
+            return True
+        return False

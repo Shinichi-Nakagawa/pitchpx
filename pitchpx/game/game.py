@@ -46,7 +46,7 @@ class Game(object):
         :return: pitchpx.game.game.Game object
         """
         soup = MlbamUtil.find_xml("/".join([url, cls.FILENAME]), markup)
-        return cls._generate_game_object(soup)
+        return cls._generate_game_object(soup, timestamp, game_number)
 
     @classmethod
     def _generate_game_object(cls, soup, timestamp, game_number):

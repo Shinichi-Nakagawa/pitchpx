@@ -52,14 +52,12 @@ class MlbAm(object):
         href = self.PAGE_URL_GAME_PREFIX.format(**timestamp_params)
         for gid in html.find_all('a', href=re.compile(href)):
             gid_path = gid.get_text().strip()
+            print(gid_path)
             gid_url = self.DELIMITER.join([base_url, gid_path])
-            # TODO game number
-            if type(gid_path[len(gid_path)-2:len(gid_path)-1]) == type(int(1)):
-                game_number = gid_path[len(gid_path)-2:len(gid_path)-1]
-            else:
-                game_number = 1
+            game_number = self._get_game_number(gid_path)
             game = Game.read_xml(gid_url, self.parser, timestamp, game_number)
-            # players = Players.read_xml(gid_url, self.parser)
+            players = Players.read_xml(gid_url, self.parser)
+            print('get Game & Players')
             # innings = Inning.read_xml(gid_url, self.parser, game, players)
             # TODO writing csv
 
@@ -100,8 +98,20 @@ class MlbAm(object):
 
         for day in range(delta.days+1):
             days.append(start_day + timedelta(days=day))
-
         return days
+
+    @classmethod
+    def _get_game_number(cls, gid_path):
+        """
+        Game Number
+        :param gid_path: game logs directory path
+        :return: game number(int)
+        """
+        game_number = str(gid_path[len(gid_path)-2:len(gid_path)-1])
+        if game_number.isdigit():
+            return int(game_number)
+        else:
+            raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
 
     @classmethod
     def scrape(cls, start, end):
