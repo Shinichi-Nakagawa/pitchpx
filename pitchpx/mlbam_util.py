@@ -32,6 +32,19 @@ class MlbamUtil(object):
         """
         return BeautifulSoup(urlopen(url), markup).find_all(tag, href=re.compile(pattern))
 
+    @classmethod
+    def get_attribute(cls, soup, key, unknown=None):
+        """
+        Get attribute for Beautifulsoup object
+        :param soup: Beautifulsoup object
+        :param key: attribute key
+        :param unknown: attribute key not exists value(default:None)
+        :return: attribute value
+        """
+        if key in soup.attrs:
+            return soup[key]
+        return unknown
+
 
 class MlbamConst(object):
 

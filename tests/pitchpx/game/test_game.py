@@ -34,6 +34,38 @@ class TestGame(TestCase):
         self.game = None
         self.dummy = None
 
+    def test_generate_game_object(self):
+        """
+        Game Object Data
+        """
+        game = Game._generate_game_object(self.game, dt.strptime('2015-08-12', '%Y-%m-%d'), 1)
+
+        # Base Data
+        self.assertEqual(game.game_type, 'R')
+        self.assertEqual(game.game_type_des, 'Regular Season')
+        self.assertEqual(game.st_fl, 'F')
+        self.assertEqual(game.regseason_fl, 'T')
+        self.assertEqual(game.local_game_time, '12:40')
+        self.assertEqual(game.game_id, '415346')
+
+        # Team Data
+        self.assertEqual(game.home_team_id, 'sea')
+        self.assertEqual(game.away_team_id, 'bal')
+        self.assertEqual(game.home_team_lg, 'AL')
+        self.assertEqual(game.away_team_lg, 'AL')
+        self.assertEqual(game.home_team_name, 'Seattle')
+        self.assertEqual(game.away_team_name, 'Baltimore')
+        self.assertEqual(game.home_team_name_full, 'Seattle Mariners')
+        self.assertEqual(game.away_team_name_full, 'Baltimore Orioles')
+
+        # Stadium Data
+        self.assertEqual(game.park_id, '680')
+        self.assertEqual(game.park_name, 'Safeco Field')
+        self.assertEqual(game.park_loc, 'Seattle, WA')
+
+        # Retro ID
+        self.assertEqual(game.retro_game_id, 'SEA201508120')
+
     def test_spring_training(self):
         """
         Spring Training Data
@@ -125,6 +157,10 @@ class TestGame(TestCase):
         self.assertEqual(Game._get_team_attribute(self.game, 'away', 'code'), 'bal')
         self.assertEqual(Game._get_team_attribute(self.game, 'home', 'league'), 'AL')
         self.assertEqual(Game._get_team_attribute(self.game, 'away', 'league'), 'AL')
+        self.assertEqual(Game._get_team_attribute(self.game, 'home', 'name'), 'Seattle')
+        self.assertEqual(Game._get_team_attribute(self.game, 'away', 'name'), 'Baltimore')
+        self.assertEqual(Game._get_team_attribute(self.game, 'home', 'name_full'), 'Seattle Mariners')
+        self.assertEqual(Game._get_team_attribute(self.game, 'home', 'name_full'), 'Baltimore Orioles')
 
     def test_team_stadium_exists(self):
         """
@@ -142,6 +178,10 @@ class TestGame(TestCase):
         self.assertEqual(Game._get_team_attribute(self.dummy, 'away', 'code'), 'Unknown')
         self.assertEqual(Game._get_team_attribute(self.dummy, 'home', 'league'), 'Unknown')
         self.assertEqual(Game._get_team_attribute(self.dummy, 'away', 'league'), 'Unknown')
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'home', 'name'), 'Unknown')
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'away', 'name'), 'Unknown')
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'home', 'name_full'), 'Unknown')
+        self.assertEqual(Game._get_team_attribute(self.dummy, 'home', 'name_full'), 'Unknown')
 
     def test_team_stadium_not_exists(self):
         """

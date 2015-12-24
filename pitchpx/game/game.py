@@ -26,14 +26,22 @@ class Game(object):
     away_team_id = MlbamConst.UNKNOWN_FULL
     home_team_lg = MlbamConst.UNKNOWN_FULL
     away_team_lg = MlbamConst.UNKNOWN_FULL
+    home_team_name = MlbamConst.UNKNOWN_FULL
+    away_team_name = MlbamConst.UNKNOWN_FULL
+    home_team_name_full = MlbamConst.UNKNOWN_FULL
+    away_team_name_full = MlbamConst.UNKNOWN_FULL
     interleague_fl = MlbamConst.UNKNOWN_SHORT
     park_id = MlbamConst.UNKNOWN_FULL
     park_name = MlbamConst.UNKNOWN_FULL
     park_loc = MlbamConst.UNKNOWN_FULL
     retro_game_id = MlbamConst.UNKNOWN_FULL
+    timestamp = None
 
-    def __init__(self):
-        pass
+    def __init__(self, timestamp):
+        """
+        :param timestamp: game day
+        """
+        self.timestamp = timestamp
 
     @classmethod
     def read_xml(cls, url, markup, timestamp, game_number):
@@ -57,23 +65,26 @@ class Game(object):
         :param game_number: game number
         :return: pitchpx.game.game.Game object
         """
-        attrs = soup.game.attrs
-        game = Game()
+        game = Game(timestamp)
 
         # Base Game Data(Spring Training, Regular Season, Play Off, etc...)
-        game.game_type = cls._get_attribute(soup, 'type', attrs, unknown=MlbamConst.UNKNOWN_SHORT)
+        game.game_type = MlbamUtil.get_attribute(soup.game, 'type', unknown=MlbamConst.UNKNOWN_SHORT)
         game.game_type_des = cls._get_game_type_des(game.game_type)
         game.st_fl = cls._get_st_fl(game.game_type)
         game.regseason_fl = cls._get_regseason_fl(game.game_type)
         game.playoff_fl = cls._get_playoff_fl(game.game_type)
-        game.local_game_time = cls._get_attribute(soup, 'local_game_time', attrs, unknown=MlbamConst.UNKNOWN_FULL)
-        game.game_id = cls._get_attribute(soup, 'game_pk', attrs, unknown=MlbamConst.UNKNOWN_FULL)
+        game.local_game_time = MlbamUtil.get_attribute(soup.game, 'local_game_time', unknown=MlbamConst.UNKNOWN_FULL)
+        game.game_id = MlbamUtil.get_attribute(soup.game, 'game_pk', unknown=MlbamConst.UNKNOWN_FULL)
 
         # Team Data
         game.home_team_id = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'code')
         game.home_team_lg = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'league')
         game.away_team_id = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'code')
         game.away_team_lg = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'league')
+        game.home_team_name = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'name')
+        game.away_team_name = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'name')
+        game.home_team_name_full = cls._get_team_attribute(soup, cls.TEAM_TYPE_HOME, 'name_full')
+        game.away_team_name_full = cls._get_team_attribute(soup, cls.TEAM_TYPE_AWAY, 'name_full')
         game.interleague_fl = cls._get_interleague_fl(game.home_team_lg, game.away_team_lg)
 
         # Stadium Data
@@ -85,19 +96,6 @@ class Game(object):
         game.retro_game_id = cls._get_retro_id(game.home_team_id, timestamp, game_number)
 
         return game
-
-    @classmethod
-    def _get_attribute(cls, soup, name, attrs, unknown=MlbamConst.UNKNOWN_FULL):
-        """
-        get attribute
-        :param soup: Beautifulsoup object
-        :param name: attribute name
-        :param attrs: attributes list
-        :return: attribute value
-        """
-        if name in attrs:
-            return soup.game[name]
-        return unknown
 
     @classmethod
     def _get_game_type_des(cls, game_type):
