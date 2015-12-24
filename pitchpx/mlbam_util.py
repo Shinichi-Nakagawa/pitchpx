@@ -45,6 +45,21 @@ class MlbamUtil(object):
             return soup[key]
         return unknown
 
+    @classmethod
+    def get_attribute_stats(cls, soup, key, data_type=str, unknown=None):
+        """
+        Get attribute for Beautifulsoup object
+        :param soup: Beautifulsoup object
+        :param key: attribute key
+        :param data_type: Data type(int, float, etc...)
+        :param unknown:
+        :return: (data_type)attribute value
+        """
+        value = cls.get_attribute(soup, key, unknown)
+        if value != unknown:
+            return data_type()
+        return unknown
+
 
 class MlbamConst(object):
 
