@@ -160,7 +160,7 @@ class TestGame(TestCase):
         self.assertEqual(Game._get_team_attribute(self.game, 'home', 'name'), 'Seattle')
         self.assertEqual(Game._get_team_attribute(self.game, 'away', 'name'), 'Baltimore')
         self.assertEqual(Game._get_team_attribute(self.game, 'home', 'name_full'), 'Seattle Mariners')
-        self.assertEqual(Game._get_team_attribute(self.game, 'home', 'name_full'), 'Baltimore Orioles')
+        self.assertEqual(Game._get_team_attribute(self.game, 'away', 'name_full'), 'Baltimore Orioles')
 
     def test_team_stadium_exists(self):
         """

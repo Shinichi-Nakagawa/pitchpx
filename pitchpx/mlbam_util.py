@@ -52,12 +52,12 @@ class MlbamUtil(object):
         :param soup: Beautifulsoup object
         :param key: attribute key
         :param data_type: Data type(int, float, etc...)
-        :param unknown:
+        :param unknown: attribute key not exists value(default:None)
         :return: (data_type)attribute value
         """
         value = cls.get_attribute(soup, key, unknown)
         if value != unknown:
-            return data_type()
+            return data_type(value)
         return unknown
 
 

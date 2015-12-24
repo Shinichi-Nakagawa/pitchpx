@@ -10,17 +10,35 @@ from pitchpx.game.players import Players
 __author__ = 'Shinichi Nakagawa'
 
 
-class AtBat(object):
+class Pitch(object):
 
     @classmethod
     def row(cls, ab, game: Game, players: Players, inning_number: int, inning_id: int) -> dict:
         """
-
+        Pitching Result
         :param ab: at bat object(type:Beautifulsoup)
         :param game: MLBAM Game object
         :param players: MLBAM Players object
         :param inning_number: Inning Number
         :param inning_number: Inning Id(0:home 1:away)
+        :return: row value(dict)
+        """
+        return {
+            # TODO pitching stats
+        }
+
+class AtBat(object):
+
+    @classmethod
+    def row(cls, ab, game: Game, players: Players, inning_number: int, inning_id: int, pitch_list: list) -> dict:
+        """
+        At Bat Result
+        :param ab: at bat object(type:Beautifulsoup)
+        :param game: MLBAM Game object
+        :param players: MLBAM Players object
+        :param inning_number: Inning Number
+        :param inning_id: Inning Id(0:home 1:away)
+        :param pitch_list: Pitching
         :return: row value(dict)
         """
         return {
@@ -55,7 +73,7 @@ class AtBat(object):
             'strike_ct': MlbamUtil.get_attribute_stats(ab, 's', int, None),
             'pitch_seq': None,  # TODO pitchタグを数えて出す
             'pitch_type_seq': None,  # TODO pitchタグを数えて出す
-            'event_outs_ct': {'key': 'o', 'type': int},
+            'event_outs_ct': None,  # TODO 数える
             'ab_des': MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL),
             'event_tx': MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL),
             'event_cd': MlbamUtil.get_attribute_stats(ab, 'event_num', int, None),
@@ -76,8 +94,8 @@ class Inning(object):
         INNING_TOP: 0,
         INNING_BOTTOM: 1,
     }
-    atbats = {}
-    pitches = {}
+    atbats = []
+    pitches = []
 
     def __init__(self, game, players):
         """
@@ -114,32 +132,32 @@ class Inning(object):
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home, 1:away)
         """
-        # at bat(batter box data)
+        # at bat(batter box data) & pitching data
         for ab in soup.find_all('atbat'):
-            self.atbats.update(self._get_atbat(ab, inning_number, inning_id))
+            pitching_stats = self._get_pitch(ab, inning_number, inning_id)
+            self.atbats.append(self._get_atbat(ab, inning_number, inning_id, pitching_stats))
 
-        # pitching data
-        for pitch in soup.find_all('pitch'):
-            self.pitches.update(self._get_pitch(pitch, inning_number))
-
-    def _get_atbat(self, soup, inning_number, inning_id):
+    def _get_atbat(self, soup, inning_number, inning_id, pitching):
         """
         get atbat data
         :param soup: Beautifulsoup object
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home, 1:away)
+        :param pitching: pitching event list
         :return: atbat result
         """
-        return AtBat.row(soup, self.game, self.players, inning_number, inning_id)
+        return AtBat.row(soup, self.game, self.players, inning_number, inning_id, pitching)
 
-    def _get_pitch(self, soup, inning_number):
+    def _get_pitch(self, soup, inning_number, inning_id):
         """
         get pitch data
         :param soup: Beautifulsoup object
         :param inning_number: Inning Number
-        :return: pitches result
+        :param inning_id: Inning Id(0:home, 1:away)
+        :return: pitches result(list)
         """
-        pitch = {}
-        # TODO append pitch event
-        print(soup)
-        return pitch
+        pitches = []
+        for pitch in soup.find_all('pitch'):
+            # TODO append pitch event
+            pitches.append(Pitch.row(pitch, self.game, self.players, inning_number, inning_id))
+        return pitches
