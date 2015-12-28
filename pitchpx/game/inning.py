@@ -21,6 +21,7 @@ class Pitch(object):
             players: Players,
             inning_number: int,
             inning_id: int,
+            pitch_list: list,
     ) -> dict:
         """
         Pitching Result
@@ -30,8 +31,15 @@ class Pitch(object):
         :param players: MLBAM Players object
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home 1:away)
+        :param pitch_list: Pitching
         :return: row value(dict)
         """
+        pitch_res = MlbamUtil.get_attribute_stats(pitch, 'type', str, MlbamConst.UNKNOWN_FULL)
+        pitch_seq = [pitch['pitch_res'] for pitch in pitch_list]
+        pitch_seq.extend([pitch_res])
+        pitch_type = MlbamUtil.get_attribute_stats(pitch, 'pitch_type', str, None)
+        pitch_type_seq = [pitch['pitch_type'] for pitch in pitch_list]
+        pitch_type_seq.extend([pitch_type])
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -60,14 +68,14 @@ class Pitch(object):
             'pa_ball_ct': None,  # TODO 後で
             'pa_strike_ct': None, # TODO 後で
             'outs_ct': None, # TODO 後で
-            'pitch_seq': None, # TODO 後で
+            'pitch_seq': ''.join(pitch_seq),
             'pa_terminal_fl': None, # TODO 後で
             'pa_event_cd': None, # TODO 後で
             'start_bases_cd': None, # TODO 後で
             'end_bases_cd': None, # TODO 後で
             'event_outs_ct': None, # TODO 後で
             'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
-            'pitch_res': MlbamUtil.get_attribute_stats(pitch, 'type', str, MlbamConst.UNKNOWN_FULL), # TODO event id によって変更
+            'pitch_res': pitch_res,
             'pitch_des': MlbamUtil.get_attribute_stats(pitch, 'des', str, MlbamConst.UNKNOWN_FULL),
             'pitch_id': MlbamUtil.get_attribute_stats(pitch, 'id', int, None),
             'x': MlbamUtil.get_attribute_stats(pitch, 'x', float, None),
@@ -91,8 +99,8 @@ class Pitch(object):
             'break_y': MlbamUtil.get_attribute_stats(pitch, 'break_y', float, None),
             'break_angle': MlbamUtil.get_attribute_stats(pitch, 'break_angle', float, None),
             'break_length': MlbamUtil.get_attribute_stats(pitch, 'break_length', float, None),
-            'pitch_type': MlbamUtil.get_attribute_stats(pitch, 'pitch_type', str, None),
-            'pitch_type_seq': None,  # TODO 後で
+            'pitch_type': pitch_type,
+            'pitch_type_seq': '|'.join(pitch_type_seq),
             'type_confidence': MlbamUtil.get_attribute_stats(pitch, 'type_confidence', float, None),
             'zone': MlbamUtil.get_attribute_stats(pitch, 'zone', float, None),
             'spin_dir': MlbamUtil.get_attribute_stats(pitch, 'spin_dir', float, None),
@@ -104,7 +112,15 @@ class Pitch(object):
 class AtBat(object):
 
     @classmethod
-    def row(cls, ab, game: Game, players: Players, inning_number: int, inning_id: int, pitch_list: list) -> dict:
+    def row(
+            cls,
+            ab,
+            game: Game,
+            players: Players,
+            inning_number: int,
+            inning_id: int,
+            pitch_list: list
+    ) -> dict:
         """
         At Bat Result
         :param ab: at bat object(type:Beautifulsoup)
@@ -145,8 +161,8 @@ class AtBat(object):
             'bat_hand_cd': MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL),
             'ball_ct': MlbamUtil.get_attribute_stats(ab, 'b', int, None),
             'strike_ct': MlbamUtil.get_attribute_stats(ab, 's', int, None),
-            'pitch_seq': None,  # TODO pitchタグを数えて出す
-            'pitch_type_seq': None,  # TODO pitchタグを数えて出す
+            'pitch_seq': ''.join([pitch['pitch_res'] for pitch in pitch_list]),
+            'pitch_type_seq': '|'.join([pitch['pitch_type'] for pitch in pitch_list]),
             'event_outs_ct': None,  # TODO 数える
             'ab_des': MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL),
             'event_tx': MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL),
@@ -235,6 +251,6 @@ class Inning(object):
         """
         pitches = []
         for pitch in soup.find_all('pitch'):
-            # TODO append pitch event
-            pitches.append(Pitch.row(pitch, soup, self.game, self.players, inning_number, inning_id))
+            pitch = Pitch.row(pitch, soup, self.game, self.players, inning_number, inning_id, pitches)
+            pitches.append(pitch)
         return pitches
