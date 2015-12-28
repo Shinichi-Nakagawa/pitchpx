@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-import pandas as pd
+from collections import OrderedDict
 from pitchpx.mlbam_util import MlbamUtil, MlbamConst
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
@@ -22,6 +21,7 @@ class Pitch(object):
             inning_number: int,
             inning_id: int,
             pitch_list: list,
+            out_ct: int,
     ) -> dict:
         """
         Pitching Result
@@ -40,6 +40,7 @@ class Pitch(object):
         pitch_type = MlbamUtil.get_attribute_stats(pitch, 'pitch_type', str, None)
         pitch_type_seq = [pitch['pitch_type'] for pitch in pitch_list]
         pitch_type_seq.extend([pitch_type])
+        event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -67,13 +68,13 @@ class Pitch(object):
             'bat_hand_cd': MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL),
             'pa_ball_ct': None,  # TODO 後で
             'pa_strike_ct': None, # TODO 後で
-            'outs_ct': None, # TODO 後で
+            'outs_ct': out_ct,
             'pitch_seq': ''.join(pitch_seq),
             'pa_terminal_fl': None, # TODO 後で
             'pa_event_cd': None, # TODO 後で
             'start_bases_cd': None, # TODO 後で
             'end_bases_cd': None, # TODO 後で
-            'event_outs_ct': None, # TODO 後で
+            'event_outs_ct': event_outs_ct,
             'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
             'pitch_res': pitch_res,
             'pitch_des': MlbamUtil.get_attribute_stats(pitch, 'des', str, MlbamConst.UNKNOWN_FULL),
@@ -119,7 +120,8 @@ class AtBat(object):
             players: Players,
             inning_number: int,
             inning_id: int,
-            pitch_list: list
+            pitch_list: list,
+            out_ct: int,
     ) -> dict:
         """
         At Bat Result
@@ -129,8 +131,10 @@ class AtBat(object):
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home 1:away)
         :param pitch_list: Pitching
+        :param out_ct: out count
         :return: row value(dict)
         """
+        event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -153,7 +157,7 @@ class AtBat(object):
             'park_location': game.park_loc,
             'inning_number': inning_number,
             'bat_home_id': inning_id,
-            'inn_outs': MlbamUtil.get_attribute_stats(ab, 'o', int, None),
+            'outs_ct': out_ct,
             'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
             'pit_mlbid': MlbamUtil.get_attribute_stats(ab, 'pitcher', str, MlbamConst.UNKNOWN_FULL),
             'pit_hand_cd': MlbamUtil.get_attribute_stats(ab, 'p_throws', str, MlbamConst.UNKNOWN_FULL),
@@ -163,7 +167,7 @@ class AtBat(object):
             'strike_ct': MlbamUtil.get_attribute_stats(ab, 's', int, None),
             'pitch_seq': ''.join([pitch['pitch_res'] for pitch in pitch_list]),
             'pitch_type_seq': '|'.join([pitch['pitch_type'] for pitch in pitch_list]),
-            'event_outs_ct': None,  # TODO 数える
+            'event_outs_ct': event_outs_ct,
             'ab_des': MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL),
             'event_tx': MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL),
             'event_cd': MlbamUtil.get_attribute_stats(ab, 'event_num', int, None),
@@ -180,10 +184,9 @@ class Inning(object):
     TAG = 'a'
     INNING_TOP = 'top'
     INNING_BOTTOM = 'bottom'
-    INNINGS = {
-        INNING_TOP: 0,
-        INNING_BOTTOM: 1,
-    }
+    INNINGS = OrderedDict()
+    INNINGS[INNING_TOP] = 0
+    INNINGS[INNING_BOTTOM] = 1
     atbats = []
     pitches = []
 
@@ -225,32 +228,37 @@ class Inning(object):
         :param inning_id: Inning Id(0:home, 1:away)
         """
         # at bat(batter box data) & pitching data
+        out_ct = 0
         for ab in soup.find_all('atbat'):
-            pitching_stats = self._get_pitch(ab, inning_number, inning_id)
-            self.atbats.append(self._get_atbat(ab, inning_number, inning_id, pitching_stats))
+            pitching_stats = self._get_pitch(ab, inning_number, inning_id, out_ct)
+            atbat = self._get_atbat(ab, inning_number, inning_id, pitching_stats, out_ct)
+            self.atbats.append(atbat)
             self.pitches.extend(pitching_stats)
+            out_ct = atbat['event_outs_ct']
 
-    def _get_atbat(self, soup, inning_number, inning_id, pitching):
+    def _get_atbat(self, soup, inning_number, inning_id, pitching, out_ct):
         """
         get atbat data
         :param soup: Beautifulsoup object
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home, 1:away)
         :param pitching: pitching event list
+        :param out_ct: out count
         :return: atbat result
         """
-        return AtBat.row(soup, self.game, self.players, inning_number, inning_id, pitching)
+        return AtBat.row(soup, self.game, self.players, inning_number, inning_id, pitching, out_ct)
 
-    def _get_pitch(self, soup, inning_number, inning_id):
+    def _get_pitch(self, soup, inning_number, inning_id, out_ct):
         """
         get pitch data
         :param soup: Beautifulsoup object
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home, 1:away)
+        :param out_ct: out count
         :return: pitches result(list)
         """
         pitches = []
         for pitch in soup.find_all('pitch'):
-            pitch = Pitch.row(pitch, soup, self.game, self.players, inning_number, inning_id, pitches)
+            pitch = Pitch.row(pitch, soup, self.game, self.players, inning_number, inning_id, pitches, out_ct)
             pitches.append(pitch)
         return pitches
