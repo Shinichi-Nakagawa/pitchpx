@@ -139,6 +139,7 @@ class AtBat(object):
         ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
         event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
         event_cd = RetroSheet.event_cd(event_tx, ab_des)
+        battedball_cd = RetroSheet.battedball_cd(event_cd, event_tx, ab_des)
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -175,7 +176,7 @@ class AtBat(object):
             'ab_des': ab_des,
             'event_tx': event_tx,
             'event_cd': event_cd,
-            'battedball_cd': None,  # TODO event_cdから出す,
+            'battedball_cd': battedball_cd,
             'start_bases_cd': None,  # TODO 塁上のランナー数(開始時)
             'end_bases_cd': None,  # TODO 塁上のランナー数(終了時)
         }

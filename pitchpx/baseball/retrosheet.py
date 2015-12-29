@@ -20,15 +20,18 @@ class RetroSheet(object):
     EVENT_21_DOUBLE = ('double', )
     EVENT_22_TRIPLE = ('triple', )
     EVENT_23_HOMERUN = ('home run')
+    EVENT_CD_HITS = (20, 21, 22, 23)
 
     @classmethod
     def event_cd(cls, event_tx: str, ab_des: str) -> int:
         """
         Event Code for Retrosheet
-        :param event_tx:
+        :param event_tx: Event text
+        :param ab_des: at bat description
         :return: event_cd(int)
         """
         _event_tx = event_tx.lower()
+        _ab_des = ab_des.lower()
         # Generic out(event_cd:2)
         if _event_tx in cls.EVENT_02_GENERIC_OUT_FLYBALL:
             return 2
@@ -76,10 +79,10 @@ class RetroSheet(object):
         # Runner Out
         elif _event_tx == 'runner out':
             # Caught stealing(event_cd:6)
-            if ab_des.lower().count("caught stealing") > 0:
+            if _ab_des.count("caught stealing") > 0:
                 return 6
             # Picks off(event_cd:6)
-            elif ab_des.lower().count("picks off") > 0:
+            elif _ab_des.count("picks off") > 0:
                 return 8
             # Unknown event(event_cd:0)
             else:
@@ -87,3 +90,62 @@ class RetroSheet(object):
         # Unknown event(event_cd:0)
         else:
             return 0
+
+    @classmethod
+    def battedball_cd(cls, event_cd:int, event_tx: str, ab_des: str) -> str:
+        """
+        Batted ball Code for Retrosheet
+        :param event_cd: Event code
+        :param event_tx: Event text
+        :param ab_des: at bat description
+        :return: battedball_cd(str)
+        """
+        _event_tx = event_tx.lower()
+        # Fly Out
+        if _event_tx in cls.EVENT_02_GENERIC_OUT_FLYBALL:
+            return 'F'
+        # Line Out
+        elif _event_tx in cls.EVENT_02_GENERIC_OUT_LINEDRIVE:
+            return 'L'
+        # Pop Out
+        elif _event_tx in cls.EVENT_02_GENERIC_OUT_POPUP:
+            return 'P'
+        # Grounder
+        elif _event_tx in cls.EVENT_02_GENERIC_OUT_GROUNDBALL:
+            return 'G'
+        # Force out, double play, triple play
+        elif _event_tx in cls.EVENT_02_GENERIC_OUT_OTHER:
+            return cls._battedball_cd(ab_des)
+        # Single, 2B, 3B, HR
+        elif event_cd in cls.EVENT_CD_HITS:
+            return cls._battedball_cd(ab_des)
+        # Unknown
+        else:
+            return ''
+
+    @classmethod
+    def _battedball_cd(cls, ab_des: str) -> str:
+        """
+        Batted ball Code for at bat description
+        :param ab_des: at bat description
+        :return: battedball_cd(str)
+        """
+        _ab_des = ab_des.lower()
+        if ab_des.count("ground")>0:
+            return 'G'
+        elif _ab_des.count("lines")>0:
+            return 'L'
+        elif _ab_des.count("flies")>0:
+            return 'F'
+        elif _ab_des.count("pops")>0:
+            return 'P'
+        elif _ab_des.count("on a line drive")>0:
+            return 'L'
+        elif _ab_des.count("fly ball")>0:
+            return 'F'
+        elif _ab_des.count("ground ball")>0:
+            return 'G'
+        elif _ab_des.count("pop up")>0:
+            return 'P'
+        else:
+            return ''
