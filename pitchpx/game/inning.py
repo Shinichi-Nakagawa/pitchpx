@@ -42,6 +42,7 @@ class Pitch(object):
         pitch_type_seq = [pitch['pitch_type'] for pitch in pitch_list]
         pitch_type_seq.extend([pitch_type])
         event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
+        start_bases, end_bases = AtBat._get_bases(ab)
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -68,13 +69,13 @@ class Pitch(object):
             'bat_mlbid': MlbamUtil.get_attribute_stats(ab, 'batter', str, MlbamConst.UNKNOWN_FULL),
             'bat_hand_cd': MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL),
             'pa_ball_ct': None,  # TODO 後で
-            'pa_strike_ct': None, # TODO 後で
+            'pa_strike_ct': None,  # TODO 後で
             'outs_ct': out_ct,
             'pitch_seq': ''.join(pitch_seq),
-            'pa_terminal_fl': None, # TODO 後で
-            'pa_event_cd': None, # TODO 後で
-            'start_bases_cd': None, # TODO 後で
-            'end_bases_cd': None, # TODO 後で
+            'pa_terminal_fl': None,  # TODO 後で
+            'pa_event_cd': None,  # TODO 後で
+            'start_bases': start_bases,
+            'end_bases': end_bases,
             'event_outs_ct': event_outs_ct,
             'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
             'pitch_res': pitch_res,
@@ -114,6 +115,26 @@ class Pitch(object):
 class AtBat(object):
 
     @classmethod
+    def _get_bases(cls, ab) -> str:
+        """
+        Start Bases & End Bases
+        :param ab: at bat object(type:Beautifulsoup)
+        :param attribute_name: attribute name
+        :return: start base, end base
+        """
+        start_bases, end_bases = [], []
+        for base in ('1B', '2B', '3B'):
+            if ab.find('runner', start=base):
+                start_bases.append(base[0:1])
+            else:
+                start_bases.append('_')
+            if ab.find('runner', end=base):
+                end_bases.append(base[0:1])
+            else:
+                end_bases.append('_')
+        return ''.join(start_bases), ''.join(end_bases)
+
+    @classmethod
     def row(
             cls,
             ab,
@@ -140,6 +161,7 @@ class AtBat(object):
         event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
         event_cd = RetroSheet.event_cd(event_tx, ab_des)
         battedball_cd = RetroSheet.battedball_cd(event_cd, event_tx, ab_des)
+        start_bases, end_bases = cls._get_bases(ab)
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -177,8 +199,8 @@ class AtBat(object):
             'event_tx': event_tx,
             'event_cd': event_cd,
             'battedball_cd': battedball_cd,
-            'start_bases_cd': None,  # TODO 塁上のランナー数(開始時)
-            'end_bases_cd': None,  # TODO 塁上のランナー数(終了時)
+            'start_bases': start_bases,
+            'end_bases': end_bases,
         }
 
 
