@@ -5,6 +5,7 @@ from collections import OrderedDict
 from pitchpx.mlbam_util import MlbamUtil, MlbamConst
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
+from pitchpx.baseball.retrosheet import RetroSheet
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -135,6 +136,9 @@ class AtBat(object):
         :return: row value(dict)
         """
         event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
+        ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
+        event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
+        event_cd = RetroSheet.event_cd(event_tx, ab_des)
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -168,9 +172,9 @@ class AtBat(object):
             'pitch_seq': ''.join([pitch['pitch_res'] for pitch in pitch_list]),
             'pitch_type_seq': '|'.join([pitch['pitch_type'] for pitch in pitch_list]),
             'event_outs_ct': event_outs_ct,
-            'ab_des': MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL),
-            'event_tx': MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL),
-            'event_cd': MlbamUtil.get_attribute_stats(ab, 'event_num', int, None),
+            'ab_des': ab_des,
+            'event_tx': event_tx,
+            'event_cd': event_cd,
             'battedball_cd': None,  # TODO event_cdから出す,
             'start_bases_cd': None,  # TODO 塁上のランナー数(開始時)
             'end_bases_cd': None,  # TODO 塁上のランナー数(終了時)
