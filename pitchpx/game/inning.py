@@ -13,25 +13,11 @@ __author__ = 'Shinichi Nakagawa'
 class Pitch(object):
 
     @classmethod
-    def row(
-            cls,
-            pitch,
-            ab,
-            game: Game,
-            players: Players,
-            inning_number: int,
-            inning_id: int,
-            pitch_list: list,
-            out_ct: int,
-    ) -> dict:
+    def row(cls, pitch, pa: dict, pitch_list: list) -> dict:
         """
         Pitching Result
         :param pitch: pitch object(type:Beautifulsoup)
-        :param ab: at bat object(type:Beautifulsoup)
-        :param game: MLBAM Game object
-        :param players: MLBAM Players object
-        :param inning_number: Inning Number
-        :param inning_id: Inning Id(0:home 1:away)
+        :param pa: At bat data for pa(dict)
         :param pitch_list: Pitching
         :return: row value(dict)
         """
@@ -41,43 +27,42 @@ class Pitch(object):
         pitch_type = MlbamUtil.get_attribute_stats(pitch, 'pitch_type', str, None)
         pitch_type_seq = [pitch['pitch_type'] for pitch in pitch_list]
         pitch_type_seq.extend([pitch_type])
-        event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
-        start_bases, end_bases = AtBat._get_bases(ab)
         return {
-            'retro_game_id': game.retro_game_id,
-            'year': game.timestamp.year,
-            'month': game.timestamp.month,
-            'day': game.timestamp.day,
-            'st_fl': game.st_fl,
-            'regseason_fl': game.regseason_fl,
-            'playoffs_fl': game.playoff_fl,
-            'game_type': game.game_type,
-            'game_type_des': game.game_type_des,
-            'game_id': game.game_id,
-            'home_team_id': game.home_team_id,
-            'away_team_id': game.away_team_id,
-            'home_team_lg': game.home_team_lg,
-            'away_team_lg': game.away_team_lg,
-            'interleague_fl': game.interleague_fl,
-            'inning_number': inning_number,
-            'bat_home_id': inning_id,
-            'park_id': game.park_id,
-            'park_name': game.park_name,
-            'park_location': game.park_loc,
-            'pit_mlbid': MlbamUtil.get_attribute_stats(ab, 'pitcher', str, MlbamConst.UNKNOWN_FULL),
-            'pit_hand_cd': MlbamUtil.get_attribute_stats(ab, 'p_throws', str, MlbamConst.UNKNOWN_FULL),
-            'bat_mlbid': MlbamUtil.get_attribute_stats(ab, 'batter', str, MlbamConst.UNKNOWN_FULL),
-            'bat_hand_cd': MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL),
+            'retro_game_id': pa['retro_game_id'],
+            'year': pa['year'],
+            'month': pa['month'],
+            'day': pa['day'],
+            'st_fl': pa['st_fl'],
+            'regseason_fl': pa['regseason_fl'],
+            'playoff_fl': pa['playoff_fl'],
+            'game_type': pa['game_type'],
+            'game_type_des': pa['game_type_des'],
+            'local_game_time': pa['local_game_time'],
+            'game_id': pa['game_id'],
+            'home_team_id': pa['home_team_id'],
+            'away_team_id': pa['away_team_id'],
+            'home_team_lg': pa['home_team_lg'],
+            'away_team_lg': pa['away_team_lg'],
+            'interleague_fl': pa['interleague_fl'],
+            'park_id': pa['park_id'],
+            'park_name': pa['park_name'],
+            'park_location': pa['park_location'],
+            'inning_number': pa['inning_number'],
+            'bat_home_id': pa['bat_home_id'],
+            'outs_ct': pa['outs_ct'],
+            'pit_mlbid': pa['pit_mlbid'],
+            'pit_hand_cd': pa['pit_hand_cd'],
+            'bat_mlbid': pa['bat_mlbid'],
+            'bat_hand_cd': pa['bat_hand_cd'],
+            'ab_number': pa['ab_number'],
+            'start_bases': pa['start_bases'],
+            'end_bases': pa['end_bases'],
+            'event_outs_ct': pa['event_outs_ct'],
             'pa_ball_ct': None,  # TODO 後で
             'pa_strike_ct': None,  # TODO 後で
-            'outs_ct': out_ct,
             'pitch_seq': ''.join(pitch_seq),
             'pa_terminal_fl': None,  # TODO 後で
             'pa_event_cd': None,  # TODO 後で
-            'start_bases': start_bases,
-            'end_bases': end_bases,
-            'event_outs_ct': event_outs_ct,
-            'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
             'pitch_res': pitch_res,
             'pitch_des': MlbamUtil.get_attribute_stats(pitch, 'des', str, MlbamConst.UNKNOWN_FULL),
             'pitch_id': MlbamUtil.get_attribute_stats(pitch, 'id', int, None),
@@ -135,18 +120,9 @@ class AtBat(object):
         return ''.join(start_bases), ''.join(end_bases)
 
     @classmethod
-    def row(
-            cls,
-            ab,
-            game: Game,
-            players: Players,
-            inning_number: int,
-            inning_id: int,
-            pitch_list: list,
-            out_ct: int,
-    ) -> dict:
+    def pa(cls, ab, game: Game, players: Players, inning_number: int, inning_id: int, out_ct: int) -> dict:
         """
-        At Bat Result
+        plate appearance data
         :param ab: at bat object(type:Beautifulsoup)
         :param game: MLBAM Game object
         :param players: MLBAM Players object
@@ -154,13 +130,9 @@ class AtBat(object):
         :param inning_id: Inning Id(0:home 1:away)
         :param pitch_list: Pitching
         :param out_ct: out count
-        :return: row value(dict)
+        :return: pa value(dict)
         """
         event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
-        ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
-        event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
-        event_cd = RetroSheet.event_cd(event_tx, ab_des)
-        battedball_cd = RetroSheet.battedball_cd(event_cd, event_tx, ab_des)
         start_bases, end_bases = cls._get_bases(ab)
         return {
             'retro_game_id': game.retro_game_id,
@@ -185,22 +157,37 @@ class AtBat(object):
             'inning_number': inning_number,
             'bat_home_id': inning_id,
             'outs_ct': out_ct,
-            'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
             'pit_mlbid': MlbamUtil.get_attribute_stats(ab, 'pitcher', str, MlbamConst.UNKNOWN_FULL),
             'pit_hand_cd': MlbamUtil.get_attribute_stats(ab, 'p_throws', str, MlbamConst.UNKNOWN_FULL),
             'bat_mlbid': MlbamUtil.get_attribute_stats(ab, 'batter', str, MlbamConst.UNKNOWN_FULL),
             'bat_hand_cd': MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL),
+            'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
+            'start_bases': start_bases,
+            'end_bases': end_bases,
+            'event_outs_ct': event_outs_ct,
+        }
+
+    @classmethod
+    def result(cls, ab, pitch_list):
+        """
+        At Bat Result
+        :param ab: at bat object(type:Beautifulsoup)
+        :param pitch_list: Pitching data
+        :return: pa result value(dict)
+        """
+        ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
+        event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
+        event_cd = RetroSheet.event_cd(event_tx, ab_des)
+        battedball_cd = RetroSheet.battedball_cd(event_cd, event_tx, ab_des)
+        return {
             'ball_ct': MlbamUtil.get_attribute_stats(ab, 'b', int, None),
             'strike_ct': MlbamUtil.get_attribute_stats(ab, 's', int, None),
             'pitch_seq': ''.join([pitch['pitch_res'] for pitch in pitch_list]),
             'pitch_type_seq': '|'.join([pitch['pitch_type'] for pitch in pitch_list]),
-            'event_outs_ct': event_outs_ct,
             'ab_des': ab_des,
             'event_tx': event_tx,
             'event_cd': event_cd,
             'battedball_cd': battedball_cd,
-            'start_bases': start_bases,
-            'end_bases': end_bases,
         }
 
 
@@ -257,35 +244,26 @@ class Inning(object):
         # at bat(batter box data) & pitching data
         out_ct = 0
         for ab in soup.find_all('atbat'):
-            pitching_stats = self._get_pitch(ab, inning_number, inning_id, out_ct)
-            atbat = self._get_atbat(ab, inning_number, inning_id, pitching_stats, out_ct)
-            self.atbats.append(atbat)
+            # plate appearance data(pa)
+            at_bat = AtBat.pa(ab, self.game, self.players, inning_number, inning_id, out_ct)
+            # pitching data
+            pitching_stats = self._get_pitch(ab, at_bat)
+            # at bat(pa result)
+            pa_result = AtBat.result(ab, pitching_stats)
+            at_bat.update(pa_result)
+            self.atbats.append(at_bat)
             self.pitches.extend(pitching_stats)
-            out_ct = atbat['event_outs_ct']
+            out_ct = at_bat['event_outs_ct']
 
-    def _get_atbat(self, soup, inning_number, inning_id, pitching, out_ct):
-        """
-        get atbat data
-        :param soup: Beautifulsoup object
-        :param inning_number: Inning Number
-        :param inning_id: Inning Id(0:home, 1:away)
-        :param pitching: pitching event list
-        :param out_ct: out count
-        :return: atbat result
-        """
-        return AtBat.row(soup, self.game, self.players, inning_number, inning_id, pitching, out_ct)
-
-    def _get_pitch(self, soup, inning_number, inning_id, out_ct):
+    def _get_pitch(self, soup, pa):
         """
         get pitch data
         :param soup: Beautifulsoup object
-        :param inning_number: Inning Number
-        :param inning_id: Inning Id(0:home, 1:away)
-        :param out_ct: out count
+        :param pa: atbat data for plate appearance
         :return: pitches result(list)
         """
         pitches = []
         for pitch in soup.find_all('pitch'):
-            pitch = Pitch.row(pitch, soup, self.game, self.players, inning_number, inning_id, pitches, out_ct)
+            pitch = Pitch.row(pitch, pa, pitches)
             pitches.append(pitch)
         return pitches
