@@ -4,7 +4,6 @@
 from collections import OrderedDict
 from pitchpx.mlbam_util import MlbamUtil, MlbamConst
 from pitchpx.game.game import Game
-from pitchpx.game.players import Players
 from pitchpx.baseball.retrosheet import RetroSheet
 
 __author__ = 'Shinichi Nakagawa'
@@ -67,8 +66,14 @@ class Pitch(object):
             'bat_home_id': pa['bat_home_id'],
             'outs_ct': pa['outs_ct'],
             'pit_mlbid': pa['pit_mlbid'],
+            'pit_first_name': pa['pit_first_name'],
+            'pit_last_name': pa['pit_last_name'],
+            'pit_box_name': pa['pit_box_name'],
             'pit_hand_cd': pa['pit_hand_cd'],
             'bat_mlbid': pa['bat_mlbid'],
+            'bat_first_name': pa['bat_first_name'],
+            'bat_last_name': pa['bat_last_name'],
+            'bat_box_name': pa['bat_box_name'],
             'bat_hand_cd': pa['bat_hand_cd'],
             'ab_number': pa['ab_number'],
             'start_bases': pa['start_bases'],
@@ -136,12 +141,12 @@ class AtBat(object):
         return ''.join(start_bases), ''.join(end_bases)
 
     @classmethod
-    def pa(cls, ab, game: Game, players: Players, inning_number: int, inning_id: int, out_ct: int) -> dict:
+    def pa(cls, ab, game: Game, rosters: dict, inning_number: int, inning_id: int, out_ct: int) -> dict:
         """
         plate appearance data
         :param ab: at bat object(type:Beautifulsoup)
         :param game: MLBAM Game object
-        :param players: MLBAM Players object
+        :param rosters: Game Rosters
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home 1:away)
         :param pitch_list: Pitching
@@ -153,6 +158,10 @@ class AtBat(object):
         event_cd = RetroSheet.event_cd(event_tx, ab_des)
         event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
         start_bases, end_bases = cls._get_bases(ab)
+        pit_mlbid = MlbamUtil.get_attribute_stats(ab, 'pitcher', str, MlbamConst.UNKNOWN_FULL)
+        bat_mlbid = MlbamUtil.get_attribute_stats(ab, 'batter', str, MlbamConst.UNKNOWN_FULL)
+        pit_player = rosters.get(pit_mlbid)
+        bat_player = rosters.get(bat_mlbid)
         return {
             'retro_game_id': game.retro_game_id,
             'year': game.timestamp.year,
@@ -176,9 +185,15 @@ class AtBat(object):
             'inning_number': inning_number,
             'bat_home_id': inning_id,
             'outs_ct': out_ct,
-            'pit_mlbid': MlbamUtil.get_attribute_stats(ab, 'pitcher', str, MlbamConst.UNKNOWN_FULL),
+            'pit_mlbid': pit_mlbid,
+            'pit_first_name': pit_player.first,
+            'pit_last_name': pit_player.last,
+            'pit_box_name': pit_player.box_name,
             'pit_hand_cd': MlbamUtil.get_attribute_stats(ab, 'p_throws', str, MlbamConst.UNKNOWN_FULL),
-            'bat_mlbid': MlbamUtil.get_attribute_stats(ab, 'batter', str, MlbamConst.UNKNOWN_FULL),
+            'bat_mlbid': bat_mlbid,
+            'bat_first_name': bat_player.first,
+            'bat_last_name': bat_player.last,
+            'bat_box_name': bat_player.box_name,
             'bat_hand_cd': MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL),
             'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
             'start_bases': start_bases,
@@ -261,7 +276,7 @@ class Inning(object):
         out_ct = 0
         for ab in soup.find_all('atbat'):
             # plate appearance data(pa)
-            at_bat = AtBat.pa(ab, self.game, self.players, inning_number, inning_id, out_ct)
+            at_bat = AtBat.pa(ab, self.game, self.players.rosters, inning_number, inning_id, out_ct)
             # pitching data
             pitching_stats = self._get_pitch(ab, at_bat)
             # at bat(pa result)
