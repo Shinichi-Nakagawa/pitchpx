@@ -14,6 +14,50 @@ class TestRetroSheet(TestCase):
     def tearDown(self):
         pass
 
+    def test_pa_terminal(self):
+        """
+        PA terminal
+        """
+        # In Play
+        self.assertTrue(RetroSheet.is_pa_terminal(0, 0, 'X', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(0, 1, 'X', 20))
+        self.assertTrue(RetroSheet.is_pa_terminal(1, 2, 'X', 21))
+        self.assertTrue(RetroSheet.is_pa_terminal(2, 2, 'X', 22))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 2, 'X', 23))
+        # Strike Out(Strike or Call)
+        self.assertTrue(RetroSheet.is_pa_terminal(0, 2, 'S', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(1, 2, 'S', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(2, 2, 'S', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 2, 'S', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(0, 2, 'C', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(1, 2, 'C', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(2, 2, 'C', 3))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 2, 'C', 3))
+        # Not Strike Out
+        self.assertFalse(RetroSheet.is_pa_terminal(0, 1, 'S', 3))
+        self.assertFalse(RetroSheet.is_pa_terminal(1, 1, 'S', 3))
+        self.assertFalse(RetroSheet.is_pa_terminal(2, 1, 'S', 3))
+        self.assertFalse(RetroSheet.is_pa_terminal(3, 1, 'S', 3))
+        self.assertFalse(RetroSheet.is_pa_terminal(0, 0, 'C', 3))
+        self.assertFalse(RetroSheet.is_pa_terminal(1, 0, 'C', 3))
+        self.assertFalse(RetroSheet.is_pa_terminal(2, 0, 'C', 3))
+        self.assertFalse(RetroSheet.is_pa_terminal(3, 0, 'C', 3))
+        # Walk(Ball or Intent Ball)
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 0, 'B', 14))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 1, 'B', 14))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 2, 'B', 14))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 0, 'B', 15))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 1, 'B', 15))
+        self.assertTrue(RetroSheet.is_pa_terminal(3, 2, 'B', 15))
+        # Not Walk
+        self.assertFalse(RetroSheet.is_pa_terminal(2, 0, 'B', 14))
+        self.assertFalse(RetroSheet.is_pa_terminal(1, 1, 'B', 14))
+        self.assertFalse(RetroSheet.is_pa_terminal(0, 2, 'B', 14))
+        self.assertFalse(RetroSheet.is_pa_terminal(2, 0, 'B', 15))
+        self.assertFalse(RetroSheet.is_pa_terminal(1, 1, 'B', 15))
+        self.assertFalse(RetroSheet.is_pa_terminal(0, 2, 'B', 15))
+
+
     def test_ball_count(self):
         """
         Ball Count

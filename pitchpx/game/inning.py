@@ -13,6 +13,20 @@ __author__ = 'Shinichi Nakagawa'
 class Pitch(object):
 
     @classmethod
+    def is_pa_terminal(cls, ball_tally: int, strike_tally: int, pitch_res: str, event_cd: int) -> str:
+        """
+        Is PA terminal
+        :param ball_tally: Ball telly
+        :param strike_tally: Strike telly
+        :param pitch_res: pitching result(Retrosheet format)
+        :param event_cd: Event code
+        :return: FLG(T or F)
+        """
+        if RetroSheet.is_pa_terminal(ball_tally, strike_tally, pitch_res, event_cd):
+            return MlbamConst.FLG_TRUE
+        return MlbamConst.FLG_FALSE
+
+    @classmethod
     def row(cls, pitch, pa: dict, pitch_list: list, ball_tally: int, strike_tally: int) -> dict:
         """
         Pitching Result
@@ -63,7 +77,7 @@ class Pitch(object):
             'pa_ball_ct': ball_tally,
             'pa_strike_ct': strike_tally,
             'pitch_seq': ''.join(pitch_seq),
-            'pa_terminal_fl': None,  # TODO 後で
+            'pa_terminal_fl': cls.is_pa_terminal(ball_tally, strike_tally, pitch_res, pa['event_cd']),
             'pa_event_cd': pa['event_cd'],
             'pitch_res': pitch_res,
             'pitch_des': MlbamUtil.get_attribute_stats(pitch, 'des', str, MlbamConst.UNKNOWN_FULL),

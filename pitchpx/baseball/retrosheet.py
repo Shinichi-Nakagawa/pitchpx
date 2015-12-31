@@ -170,3 +170,24 @@ class RetroSheet(object):
             if strike_tally < 2:
                 s += 1
         return b, s
+
+    @classmethod
+    def is_pa_terminal(cls, ball_tally: int, strike_tally: int, pitch_res: str, event_cd: int):
+        """
+        Is PA terminal
+        :param ball_tally: Ball telly
+        :param strike_tally: Strike telly
+        :param pitch_res: pitching result(Retrosheet format)
+        :param event_cd: Event code
+        :return: True or False
+        """
+        # In Play
+        if pitch_res == 'X':
+            return True
+        # Strike Out(Strike or Call)
+        elif (pitch_res == 'S' or pitch_res == 'C') and event_cd == 3 and strike_tally == 2:
+            return True
+        # Walk(Ball or Intent Ball)
+        elif pitch_res == 'B' and (event_cd == 14 or event_cd == 15) and ball_tally == 3:
+            return True
+        return False
