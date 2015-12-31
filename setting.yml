@@ -1,0 +1,8 @@
+---
+config:
+  xml_parser: lxml
+  encoding: utf-8
+  extension: csv
+mlb:
+  url: http://gd2.mlb.com/components/game/mlb
+
