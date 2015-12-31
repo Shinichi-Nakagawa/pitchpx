@@ -13,12 +13,14 @@ __author__ = 'Shinichi Nakagawa'
 class Pitch(object):
 
     @classmethod
-    def row(cls, pitch, pa: dict, pitch_list: list) -> dict:
+    def row(cls, pitch, pa: dict, pitch_list: list, ball_tally: int, strike_tally: int) -> dict:
         """
         Pitching Result
         :param pitch: pitch object(type:Beautifulsoup)
         :param pa: At bat data for pa(dict)
         :param pitch_list: Pitching
+        :param ball_tally: Ball telly
+        :param strike_tally: Strike telly
         :return: row value(dict)
         """
         pitch_res = MlbamUtil.get_attribute_stats(pitch, 'type', str, MlbamConst.UNKNOWN_FULL)
@@ -58,8 +60,8 @@ class Pitch(object):
             'start_bases': pa['start_bases'],
             'end_bases': pa['end_bases'],
             'event_outs_ct': pa['event_outs_ct'],
-            'pa_ball_ct': None,  # TODO 後で
-            'pa_strike_ct': None,  # TODO 後で
+            'pa_ball_ct': ball_tally,
+            'pa_strike_ct': strike_tally,
             'pitch_seq': ''.join(pitch_seq),
             'pa_terminal_fl': None,  # TODO 後で
             'pa_event_cd': None,  # TODO 後で
@@ -253,6 +255,7 @@ class Inning(object):
             at_bat.update(pa_result)
             self.atbats.append(at_bat)
             self.pitches.extend(pitching_stats)
+            # out count
             out_ct = at_bat['event_outs_ct']
 
     def _get_pitch(self, soup, pa):
@@ -263,7 +266,11 @@ class Inning(object):
         :return: pitches result(list)
         """
         pitches = []
+        ball_tally, strike_tally = 0, 0
         for pitch in soup.find_all('pitch'):
-            pitch = Pitch.row(pitch, pa, pitches)
+            # pitching result
+            pitch = Pitch.row(pitch, pa, pitches, ball_tally, strike_tally)
             pitches.append(pitch)
+            # ball count
+            ball_tally, strike_tally = RetroSheet.ball_count(ball_tally, strike_tally, pitch['pitch_res'])
         return pitches

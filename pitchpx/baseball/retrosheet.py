@@ -149,3 +149,24 @@ class RetroSheet(object):
             return 'P'
         else:
             return ''
+
+    @classmethod
+    def ball_count(cls, ball_tally: int, strike_tally: int, pitch_res: str):
+        """
+        Ball/Strike counter
+        :param ball_tally: Ball telly
+        :param strike_tally: Strike telly
+        :param pitch_res: pitching result(Retrosheet format)
+        :return: ball count, strike count
+        """
+        b, s = ball_tally, strike_tally
+        if pitch_res == "B":
+            if ball_tally < 4:
+                b += 1
+        elif pitch_res == "S" or pitch_res == "C" or pitch_res == "X":
+            if strike_tally < 3:
+                s += 1
+        elif pitch_res == "F":
+            if strike_tally < 2:
+                s += 1
+        return b, s

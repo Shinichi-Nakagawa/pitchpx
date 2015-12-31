@@ -14,6 +14,83 @@ class TestRetroSheet(TestCase):
     def tearDown(self):
         pass
 
+    def test_ball_count(self):
+        """
+        Ball Count
+        """
+        # ball:0 strike:0
+        self.assertEqual(RetroSheet.ball_count(0, 0, 'B'), (1, 0))
+        self.assertEqual(RetroSheet.ball_count(0, 0, 'S'), (0, 1))
+        self.assertEqual(RetroSheet.ball_count(0, 0, 'C'), (0, 1))
+        self.assertEqual(RetroSheet.ball_count(0, 0, 'X'), (0, 1))
+        self.assertEqual(RetroSheet.ball_count(0, 0, 'F'), (0, 1))
+        # ball:1 strike:0
+        self.assertEqual(RetroSheet.ball_count(1, 0, 'B'), (2, 0))
+        self.assertEqual(RetroSheet.ball_count(1, 0, 'S'), (1, 1))
+        self.assertEqual(RetroSheet.ball_count(1, 0, 'C'), (1, 1))
+        self.assertEqual(RetroSheet.ball_count(1, 0, 'X'), (1, 1))
+        self.assertEqual(RetroSheet.ball_count(1, 0, 'F'), (1, 1))
+        # ball:2 strike:0
+        self.assertEqual(RetroSheet.ball_count(2, 0, 'B'), (3, 0))
+        self.assertEqual(RetroSheet.ball_count(2, 0, 'S'), (2, 1))
+        self.assertEqual(RetroSheet.ball_count(2, 0, 'C'), (2, 1))
+        self.assertEqual(RetroSheet.ball_count(2, 0, 'X'), (2, 1))
+        self.assertEqual(RetroSheet.ball_count(2, 0, 'F'), (2, 1))
+        # ball:3 strike:0
+        self.assertEqual(RetroSheet.ball_count(3, 0, 'B'), (4, 0))
+        self.assertEqual(RetroSheet.ball_count(3, 0, 'S'), (3, 1))
+        self.assertEqual(RetroSheet.ball_count(3, 0, 'C'), (3, 1))
+        self.assertEqual(RetroSheet.ball_count(3, 0, 'X'), (3, 1))
+        self.assertEqual(RetroSheet.ball_count(3, 0, 'F'), (3, 1))
+        # ball:0 strike:1
+        self.assertEqual(RetroSheet.ball_count(0, 1, 'B'), (1, 1))
+        self.assertEqual(RetroSheet.ball_count(0, 1, 'S'), (0, 2))
+        self.assertEqual(RetroSheet.ball_count(0, 1, 'C'), (0, 2))
+        self.assertEqual(RetroSheet.ball_count(0, 1, 'X'), (0, 2))
+        self.assertEqual(RetroSheet.ball_count(0, 1, 'F'), (0, 2))
+        # ball:1 strike:1
+        self.assertEqual(RetroSheet.ball_count(1, 1, 'B'), (2, 1))
+        self.assertEqual(RetroSheet.ball_count(1, 1, 'S'), (1, 2))
+        self.assertEqual(RetroSheet.ball_count(1, 1, 'C'), (1, 2))
+        self.assertEqual(RetroSheet.ball_count(1, 1, 'X'), (1, 2))
+        self.assertEqual(RetroSheet.ball_count(1, 1, 'F'), (1, 2))
+        # ball:2 strike:1
+        self.assertEqual(RetroSheet.ball_count(2, 1, 'B'), (3, 1))
+        self.assertEqual(RetroSheet.ball_count(2, 1, 'S'), (2, 2))
+        self.assertEqual(RetroSheet.ball_count(2, 1, 'C'), (2, 2))
+        self.assertEqual(RetroSheet.ball_count(2, 1, 'X'), (2, 2))
+        self.assertEqual(RetroSheet.ball_count(2, 1, 'F'), (2, 2))
+        # ball:3 strike:1
+        self.assertEqual(RetroSheet.ball_count(3, 1, 'B'), (4, 1))
+        self.assertEqual(RetroSheet.ball_count(3, 1, 'S'), (3, 2))
+        self.assertEqual(RetroSheet.ball_count(3, 1, 'C'), (3, 2))
+        self.assertEqual(RetroSheet.ball_count(3, 1, 'X'), (3, 2))
+        self.assertEqual(RetroSheet.ball_count(3, 1, 'F'), (3, 2))
+        # ball:0 strike:2
+        self.assertEqual(RetroSheet.ball_count(0, 2, 'B'), (1, 2))
+        self.assertEqual(RetroSheet.ball_count(0, 2, 'S'), (0, 3))
+        self.assertEqual(RetroSheet.ball_count(0, 2, 'C'), (0, 3))
+        self.assertEqual(RetroSheet.ball_count(0, 2, 'X'), (0, 3))
+        self.assertEqual(RetroSheet.ball_count(0, 2, 'F'), (0, 2))
+        # ball:1 strike:2
+        self.assertEqual(RetroSheet.ball_count(1, 2, 'B'), (2, 2))
+        self.assertEqual(RetroSheet.ball_count(1, 2, 'S'), (1, 3))
+        self.assertEqual(RetroSheet.ball_count(1, 2, 'C'), (1, 3))
+        self.assertEqual(RetroSheet.ball_count(1, 2, 'X'), (1, 3))
+        self.assertEqual(RetroSheet.ball_count(1, 2, 'F'), (1, 2))
+        # ball:2 strike:2
+        self.assertEqual(RetroSheet.ball_count(2, 2, 'B'), (3, 2))
+        self.assertEqual(RetroSheet.ball_count(2, 2, 'S'), (2, 3))
+        self.assertEqual(RetroSheet.ball_count(2, 2, 'C'), (2, 3))
+        self.assertEqual(RetroSheet.ball_count(2, 2, 'X'), (2, 3))
+        self.assertEqual(RetroSheet.ball_count(2, 2, 'F'), (2, 2))
+        # ball:3 strike:2
+        self.assertEqual(RetroSheet.ball_count(3, 2, 'B'), (4, 2))
+        self.assertEqual(RetroSheet.ball_count(3, 2, 'S'), (3, 3))
+        self.assertEqual(RetroSheet.ball_count(3, 2, 'C'), (3, 3))
+        self.assertEqual(RetroSheet.ball_count(3, 2, 'X'), (3, 3))
+        self.assertEqual(RetroSheet.ball_count(3, 2, 'F'), (3, 2))
+
     def test_event_cd(self):
         """
         Get Event code
