@@ -246,6 +246,7 @@ class Inning(object):
         """
         self.game = game
         self.players = players
+        self.atbats, self.pitches = [], []
 
     @classmethod
     def read_xml(cls, url, markup, game, players):
