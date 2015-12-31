@@ -64,7 +64,7 @@ class Pitch(object):
             'pa_strike_ct': strike_tally,
             'pitch_seq': ''.join(pitch_seq),
             'pa_terminal_fl': None,  # TODO 後で
-            'pa_event_cd': None,  # TODO 後で
+            'pa_event_cd': pa['event_cd'],
             'pitch_res': pitch_res,
             'pitch_des': MlbamUtil.get_attribute_stats(pitch, 'des', str, MlbamConst.UNKNOWN_FULL),
             'pitch_id': MlbamUtil.get_attribute_stats(pitch, 'id', int, None),
@@ -134,6 +134,9 @@ class AtBat(object):
         :param out_ct: out count
         :return: pa value(dict)
         """
+        ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
+        event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
+        event_cd = RetroSheet.event_cd(event_tx, ab_des)
         event_outs_ct = MlbamUtil.get_attribute_stats(ab, 'o', int, 0)
         start_bases, end_bases = cls._get_bases(ab)
         return {
@@ -167,29 +170,26 @@ class AtBat(object):
             'start_bases': start_bases,
             'end_bases': end_bases,
             'event_outs_ct': event_outs_ct,
+            'ab_des': ab_des,
+            'event_tx': event_tx,
+            'event_cd': event_cd,
         }
 
     @classmethod
-    def result(cls, ab, pitch_list):
+    def result(cls, ab, pa: dict, pitch_list: list):
         """
         At Bat Result
         :param ab: at bat object(type:Beautifulsoup)
+        :param pa: atbat data for plate appearance
         :param pitch_list: Pitching data
         :return: pa result value(dict)
         """
-        ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
-        event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
-        event_cd = RetroSheet.event_cd(event_tx, ab_des)
-        battedball_cd = RetroSheet.battedball_cd(event_cd, event_tx, ab_des)
         return {
             'ball_ct': MlbamUtil.get_attribute_stats(ab, 'b', int, None),
             'strike_ct': MlbamUtil.get_attribute_stats(ab, 's', int, None),
             'pitch_seq': ''.join([pitch['pitch_res'] for pitch in pitch_list]),
             'pitch_type_seq': '|'.join([pitch['pitch_type'] for pitch in pitch_list]),
-            'ab_des': ab_des,
-            'event_tx': event_tx,
-            'event_cd': event_cd,
-            'battedball_cd': battedball_cd,
+            'battedball_cd': RetroSheet.battedball_cd(pa['event_cd'], pa['event_tx'], pa['ab_des']),
         }
 
 
@@ -251,7 +251,7 @@ class Inning(object):
             # pitching data
             pitching_stats = self._get_pitch(ab, at_bat)
             # at bat(pa result)
-            pa_result = AtBat.result(ab, pitching_stats)
+            pa_result = AtBat.result(ab, at_bat, pitching_stats)
             at_bat.update(pa_result)
             self.atbats.append(at_bat)
             self.pitches.extend(pitching_stats)
