@@ -14,6 +14,7 @@ class Game(object):
     FILENAME = 'game.xml'
     TEAM_TYPE_HOME = 'home'
     TEAM_TYPE_AWAY = 'away'
+    DOWNLOAD_FILE_NAME = 'mlbam_game_{day}.{extension}'
 
     st_fl = MlbamConst.UNKNOWN_SHORT
     regseason_fl = MlbamConst.UNKNOWN_SHORT

@@ -74,6 +74,8 @@ class Players(object):
         bat_order = MlbamConst.UNKNOWN_SHORT
         game_position = MlbamConst.UNKNOWN_SHORT
 
+        DOWNLOAD_FILE_NAME = 'mlbam_player_{day}.{extension}'
+
         def __init__(self, soup):
             """
             create object
@@ -115,6 +117,8 @@ class Players(object):
         team_id = MlbamConst.UNKNOWN_SHORT
         team_name = MlbamConst.UNKNOWN_FULL
 
+        DOWNLOAD_FILE_NAME = 'mlbam_coach_{day}.{extension}'
+
         def __init__(self, soup, team):
             """
             create object
@@ -132,6 +136,8 @@ class Players(object):
         Umpire Data
         """
         name = MlbamConst.UNKNOWN_FULL
+
+        DOWNLOAD_FILE_NAME = 'mlbam_umpire_{day}.{extension}'
 
         def __init__(self, soup):
             """

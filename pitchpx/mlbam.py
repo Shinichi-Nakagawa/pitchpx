@@ -26,11 +26,18 @@ class MlbAm(object):
     PAGE_URL_GAME_DAY = 'year_{year}/month_{month}/day_{day}'
     PAGE_URL_GAME_PREFIX = 'gid_{year}_{month}_{day}_.*'
 
-    def __init__(self, base_dir, setting_file='setting.yml'):
+    def __init__(self, base_dir, output, setting_file='setting.yml'):
+        """
+        MLBAM Data set scrape
+        :param base_dir: Base directory
+        :param output: Output directory
+        :param setting_file: setteing file(yml)
+        """
         setting = yaml.load(open(self.DELIMITER.join([base_dir, setting_file]), 'r'))
-        self.output_dir = self.DELIMITER.join([base_dir, setting['mlb']['output_dir']])
         self.url = setting['mlb']['url']
         self.parser = setting['config']['xml_parser']
+        self.extension = setting['config']['extension']
+        self.output = output
 
     def _download_game(self, ):
         pass
@@ -38,7 +45,7 @@ class MlbAm(object):
     def download(self, timestamp: dt):
         """
         download MLBAM Game Day
-        :param timestamp:
+        :param timestamp: day
         :return:
         """
         timestamp_params = {
@@ -113,11 +120,12 @@ class MlbAm(object):
             raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
 
     @classmethod
-    def scrape(cls, start, end):
+    def scrape(cls, start, end, output):
         """
         Scrape a MLBAM Data
         :param start: Start Day(YYYYMMDD)
         :param end: End Day(YYYYMMDD)
+        :param output: Output directory
         """
 
         # validate
@@ -130,7 +138,7 @@ class MlbAm(object):
 
         days = cls._days(start, end)
 
-        mlb = MlbAm(os.path.dirname(os.path.abspath('.')))
+        mlb = MlbAm(os.path.dirname(os.path.abspath('.')), output)
         # TODO ここは並列化する
         for day in days:
             mlb.download(day)
@@ -150,14 +158,16 @@ class MlbAmBadParameter(MlbAmException):
 @click.command()
 @click.option('--start', '-s', required=True, help='Start Day(YYYYMMDD)')
 @click.option('--end', '-e', required=True, help='End Day(YYYYMMDD)')
-def scrape(start, end):
+@click.option('--out', '-o', required=True, default='./output/mlb', help='Output directory(default:"./output/mlb")')
+def scrape(start, end, out):
     """
     Scrape a MLBAM Data
     :param start: Start Day(YYYYMMDD)
     :param end: End Day(YYYYMMDD)
+    :param out: Output directory(default:"./output/mlb")
     """
     try:
-        MlbAm.scrape(start, end)
+        MlbAm.scrape(start, end, out)
     except MlbAmBadParameter as e:
         raise click.BadParameter(e)
 

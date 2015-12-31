@@ -11,6 +11,8 @@ __author__ = 'Shinichi Nakagawa'
 
 class Pitch(object):
 
+    DOWNLOAD_FILE_NAME = 'mlbam_pitch_{day}.{extension}'
+
     @classmethod
     def is_pa_terminal(cls, ball_tally: int, strike_tally: int, pitch_res: str, event_cd: int) -> str:
         """
@@ -39,7 +41,7 @@ class Pitch(object):
         pitch_res = MlbamUtil.get_attribute_stats(pitch, 'type', str, MlbamConst.UNKNOWN_FULL)
         pitch_seq = [pitch['pitch_res'] for pitch in pitch_list]
         pitch_seq.extend([pitch_res])
-        pitch_type = MlbamUtil.get_attribute_stats(pitch, 'pitch_type', str, None)
+        pitch_type = MlbamUtil.get_attribute_stats(pitch, 'pitch_type', str, MlbamConst.UNKNOWN_SHORT)
         pitch_type_seq = [pitch['pitch_type'] for pitch in pitch_list]
         pitch_type_seq.extend([pitch_type])
         return {
@@ -119,6 +121,8 @@ class Pitch(object):
 
 
 class AtBat(object):
+
+    DOWNLOAD_FILE_NAME = 'mlbam_atbat_{day}.{extension}'
 
     @classmethod
     def _get_bases(cls, ab) -> str:
