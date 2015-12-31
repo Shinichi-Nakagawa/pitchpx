@@ -3,6 +3,7 @@
 
 import os
 import re
+import csv
 import click
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
@@ -13,7 +14,7 @@ import yaml
 
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
-from pitchpx.game.inning import Inning
+from pitchpx.game.inning import Inning, AtBat, Pitch
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -37,6 +38,7 @@ class MlbAm(object):
         self.url = setting['mlb']['url']
         self.parser = setting['config']['xml_parser']
         self.extension = setting['config']['extension']
+        self.encoding = setting['config']['encoding']
         self.output = output
 
     def _download_game(self, ):
@@ -46,8 +48,8 @@ class MlbAm(object):
         """
         download MLBAM Game Day
         :param timestamp: day
-        :return:
         """
+        atbats, pitches = [], []
         timestamp_params = {
             'year': str(timestamp.year),
             'month': str(timestamp.month).zfill(2),
@@ -59,13 +61,31 @@ class MlbAm(object):
         href = self.PAGE_URL_GAME_PREFIX.format(**timestamp_params)
         for gid in html.find_all('a', href=re.compile(href)):
             gid_path = gid.get_text().strip()
-            print(gid_path)
             gid_url = self.DELIMITER.join([base_url, gid_path])
             game_number = self._get_game_number(gid_path)
             game = Game.read_xml(gid_url, self.parser, timestamp, game_number)
             players = Players.read_xml(gid_url, self.parser)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
-            # TODO writing csv
+            atbats.extend(innings.atbats)
+            pitches.extend(innings.pitches)
+        # writing csv
+        day = "".join([timestamp_params['year'], timestamp_params['month'], timestamp_params['day']])
+        self._write_csv(atbats, AtBat.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
+        self._write_csv(pitches, Pitch.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
+
+    def _write_csv(self, datasets, filename):
+        """
+        Write CSV
+        :param datasets: Datasets
+        :param filename: File Name
+        """
+        with open('/'.join([self.output, filename]), mode='w', encoding=self.encoding) as write_file:
+            writer = csv.writer(write_file, delimiter=',')
+            for i, row in enumerate(datasets):
+                if i == 0:
+                    # header
+                    writer.writerow(row.keys())
+                writer.writerow(row.values())
 
     @classmethod
     def _validate_datetime(cls, value):
@@ -158,13 +178,13 @@ class MlbAmBadParameter(MlbAmException):
 @click.command()
 @click.option('--start', '-s', required=True, help='Start Day(YYYYMMDD)')
 @click.option('--end', '-e', required=True, help='End Day(YYYYMMDD)')
-@click.option('--out', '-o', required=True, default='./output/mlb', help='Output directory(default:"./output/mlb")')
+@click.option('--out', '-o', required=True, default='../output/mlb', help='Output directory(default:"./output/mlb")')
 def scrape(start, end, out):
     """
     Scrape a MLBAM Data
     :param start: Start Day(YYYYMMDD)
     :param end: End Day(YYYYMMDD)
-    :param out: Output directory(default:"./output/mlb")
+    :param out: Output directory(default:"../output/mlb")
     """
     try:
         MlbAm.scrape(start, end, out)

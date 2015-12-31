@@ -44,80 +44,80 @@ class Pitch(object):
         pitch_type = MlbamUtil.get_attribute_stats(pitch, 'pitch_type', str, MlbamConst.UNKNOWN_SHORT)
         pitch_type_seq = [pitch['pitch_type'] for pitch in pitch_list]
         pitch_type_seq.extend([pitch_type])
-        return {
-            'retro_game_id': pa['retro_game_id'],
-            'year': pa['year'],
-            'month': pa['month'],
-            'day': pa['day'],
-            'st_fl': pa['st_fl'],
-            'regseason_fl': pa['regseason_fl'],
-            'playoff_fl': pa['playoff_fl'],
-            'game_type': pa['game_type'],
-            'game_type_des': pa['game_type_des'],
-            'local_game_time': pa['local_game_time'],
-            'game_id': pa['game_id'],
-            'home_team_id': pa['home_team_id'],
-            'away_team_id': pa['away_team_id'],
-            'home_team_lg': pa['home_team_lg'],
-            'away_team_lg': pa['away_team_lg'],
-            'interleague_fl': pa['interleague_fl'],
-            'park_id': pa['park_id'],
-            'park_name': pa['park_name'],
-            'park_location': pa['park_location'],
-            'inning_number': pa['inning_number'],
-            'bat_home_id': pa['bat_home_id'],
-            'outs_ct': pa['outs_ct'],
-            'pit_mlbid': pa['pit_mlbid'],
-            'pit_first_name': pa['pit_first_name'],
-            'pit_last_name': pa['pit_last_name'],
-            'pit_box_name': pa['pit_box_name'],
-            'pit_hand_cd': pa['pit_hand_cd'],
-            'bat_mlbid': pa['bat_mlbid'],
-            'bat_first_name': pa['bat_first_name'],
-            'bat_last_name': pa['bat_last_name'],
-            'bat_box_name': pa['bat_box_name'],
-            'bat_hand_cd': pa['bat_hand_cd'],
-            'ab_number': pa['ab_number'],
-            'start_bases': pa['start_bases'],
-            'end_bases': pa['end_bases'],
-            'event_outs_ct': pa['event_outs_ct'],
-            'pa_ball_ct': ball_tally,
-            'pa_strike_ct': strike_tally,
-            'pitch_seq': ''.join(pitch_seq),
-            'pa_terminal_fl': cls.is_pa_terminal(ball_tally, strike_tally, pitch_res, pa['event_cd']),
-            'pa_event_cd': pa['event_cd'],
-            'pitch_res': pitch_res,
-            'pitch_des': MlbamUtil.get_attribute_stats(pitch, 'des', str, MlbamConst.UNKNOWN_FULL),
-            'pitch_id': MlbamUtil.get_attribute_stats(pitch, 'id', int, None),
-            'x': MlbamUtil.get_attribute_stats(pitch, 'x', float, None),
-            'y': MlbamUtil.get_attribute_stats(pitch, 'y', float, None),
-            'start_speed': MlbamUtil.get_attribute_stats(pitch, 'start_speed', float, None),
-            'end_speed': MlbamUtil.get_attribute_stats(pitch, 'end_speed', float, None),
-            'sz_top': MlbamUtil.get_attribute_stats(pitch, 'sz_top', float, None),
-            'sz_bottom': MlbamUtil.get_attribute_stats(pitch, 'sz_bottom', float, None),
-            'pfx_x': MlbamUtil.get_attribute_stats(pitch, 'pfx_x', float, None),
-            'pfx_z': MlbamUtil.get_attribute_stats(pitch, 'pfx_z', float, None),
-            'px': MlbamUtil.get_attribute_stats(pitch, 'px', float, None),
-            'pz': MlbamUtil.get_attribute_stats(pitch, 'pz', float, None),
-            'x0': MlbamUtil.get_attribute_stats(pitch, 'x0', float, None),
-            'z0': MlbamUtil.get_attribute_stats(pitch, 'z0', float, None),
-            'vx0': MlbamUtil.get_attribute_stats(pitch, 'vx0', float, None),
-            'vy0': MlbamUtil.get_attribute_stats(pitch, 'vy0', float, None),
-            'vz0': MlbamUtil.get_attribute_stats(pitch, 'vz0', float, None),
-            'ax': MlbamUtil.get_attribute_stats(pitch, 'ax', float, None),
-            'ay': MlbamUtil.get_attribute_stats(pitch, 'ay', float, None),
-            'az': MlbamUtil.get_attribute_stats(pitch, 'az', float, None),
-            'break_y': MlbamUtil.get_attribute_stats(pitch, 'break_y', float, None),
-            'break_angle': MlbamUtil.get_attribute_stats(pitch, 'break_angle', float, None),
-            'break_length': MlbamUtil.get_attribute_stats(pitch, 'break_length', float, None),
-            'pitch_type': pitch_type,
-            'pitch_type_seq': '|'.join(pitch_type_seq),
-            'type_confidence': MlbamUtil.get_attribute_stats(pitch, 'type_confidence', float, None),
-            'zone': MlbamUtil.get_attribute_stats(pitch, 'zone', float, None),
-            'spin_dir': MlbamUtil.get_attribute_stats(pitch, 'spin_dir', float, None),
-            'spin_rate': MlbamUtil.get_attribute_stats(pitch, 'spin_rate', float, None),
-            'sv_id': MlbamUtil.get_attribute_stats(pitch, 'sv_id', str, None),
-        }
+        pitching = OrderedDict()
+        pitching['retro_game_id'] = pa['retro_game_id']
+        pitching['year'] = pa['year']
+        pitching['month'] = pa['month']
+        pitching['day'] = pa['day']
+        pitching['st_fl'] = pa['st_fl']
+        pitching['regseason_fl'] = pa['regseason_fl']
+        pitching['playoff_fl'] = pa['playoff_fl']
+        pitching['game_type'] = pa['game_type']
+        pitching['game_type_des'] = pa['game_type_des']
+        pitching['local_game_time'] = pa['local_game_time']
+        pitching['game_id'] = pa['game_id']
+        pitching['home_team_id'] = pa['home_team_id']
+        pitching['away_team_id'] = pa['away_team_id']
+        pitching['home_team_lg'] = pa['home_team_lg']
+        pitching['away_team_lg'] = pa['away_team_lg']
+        pitching['interleague_fl'] = pa['interleague_fl']
+        pitching['park_id'] = pa['park_id']
+        pitching['park_name'] = pa['park_name']
+        pitching['park_location'] = pa['park_location']
+        pitching['inning_number'] = pa['inning_number']
+        pitching['bat_home_id'] = pa['bat_home_id']
+        pitching['outs_ct'] = pa['outs_ct']
+        pitching['pit_mlbid'] = pa['pit_mlbid']
+        pitching['pit_first_name'] = pa['pit_first_name']
+        pitching['pit_last_name'] = pa['pit_last_name']
+        pitching['pit_box_name'] = pa['pit_box_name']
+        pitching['pit_hand_cd'] = pa['pit_hand_cd']
+        pitching['bat_mlbid'] = pa['bat_mlbid']
+        pitching['bat_first_name'] = pa['bat_first_name']
+        pitching['bat_last_name'] = pa['bat_last_name']
+        pitching['bat_box_name'] = pa['bat_box_name']
+        pitching['bat_hand_cd'] = pa['bat_hand_cd']
+        pitching['ab_number'] = pa['ab_number']
+        pitching['start_bases'] = pa['start_bases']
+        pitching['end_bases'] = pa['end_bases']
+        pitching['event_outs_ct'] = pa['event_outs_ct']
+        pitching['pa_ball_ct'] = ball_tally
+        pitching['pa_strike_ct'] = strike_tally
+        pitching['pitch_seq'] = ''.join(pitch_seq)
+        pitching['pa_terminal_fl'] = cls.is_pa_terminal(ball_tally, strike_tally, pitch_res, pa['event_cd'])
+        pitching['pa_event_cd'] = pa['event_cd']
+        pitching['pitch_res'] = pitch_res
+        pitching['pitch_des'] = MlbamUtil.get_attribute_stats(pitch, 'des', str, MlbamConst.UNKNOWN_FULL)
+        pitching['pitch_id'] = MlbamUtil.get_attribute_stats(pitch, 'id', int, None)
+        pitching['x'] = MlbamUtil.get_attribute_stats(pitch, 'x', float, None)
+        pitching['y'] = MlbamUtil.get_attribute_stats(pitch, 'y', float, None)
+        pitching['start_speed'] = MlbamUtil.get_attribute_stats(pitch, 'start_speed', float, None)
+        pitching['end_speed'] = MlbamUtil.get_attribute_stats(pitch, 'end_speed', float, None)
+        pitching['sz_top'] = MlbamUtil.get_attribute_stats(pitch, 'sz_top', float, None)
+        pitching['sz_bottom'] = MlbamUtil.get_attribute_stats(pitch, 'sz_bottom', float, None)
+        pitching['pfx_x'] = MlbamUtil.get_attribute_stats(pitch, 'pfx_x', float, None)
+        pitching['pfx_z'] = MlbamUtil.get_attribute_stats(pitch, 'pfx_z', float, None)
+        pitching['px'] = MlbamUtil.get_attribute_stats(pitch, 'px', float, None)
+        pitching['pz'] = MlbamUtil.get_attribute_stats(pitch, 'pz', float, None)
+        pitching['x0'] = MlbamUtil.get_attribute_stats(pitch, 'x0', float, None)
+        pitching['z0'] = MlbamUtil.get_attribute_stats(pitch, 'z0', float, None)
+        pitching['vx0'] = MlbamUtil.get_attribute_stats(pitch, 'vx0', float, None)
+        pitching['vy0'] = MlbamUtil.get_attribute_stats(pitch, 'vy0', float, None)
+        pitching['vz0'] = MlbamUtil.get_attribute_stats(pitch, 'vz0', float, None)
+        pitching['ax'] = MlbamUtil.get_attribute_stats(pitch, 'ax', float, None)
+        pitching['ay'] = MlbamUtil.get_attribute_stats(pitch, 'ay', float, None)
+        pitching['az'] = MlbamUtil.get_attribute_stats(pitch, 'az', float, None)
+        pitching['break_y'] = MlbamUtil.get_attribute_stats(pitch, 'break_y', float, None)
+        pitching['break_angle'] = MlbamUtil.get_attribute_stats(pitch, 'break_angle', float, None)
+        pitching['break_length'] = MlbamUtil.get_attribute_stats(pitch, 'break_length', float, None)
+        pitching['pitch_type'] = pitch_type
+        pitching['pitch_type_seq'] = '|'.join(pitch_type_seq)
+        pitching['type_confidence'] = MlbamUtil.get_attribute_stats(pitch, 'type_confidence', float, None)
+        pitching['zone'] = MlbamUtil.get_attribute_stats(pitch, 'zone', float, None)
+        pitching['spin_dir'] = MlbamUtil.get_attribute_stats(pitch, 'spin_dir', float, None)
+        pitching['spin_rate'] = MlbamUtil.get_attribute_stats(pitch, 'spin_rate', float, None)
+        pitching['sv_id'] = MlbamUtil.get_attribute_stats(pitch, 'sv_id', str, None)
+        return pitching
 
 
 class AtBat(object):
@@ -166,47 +166,47 @@ class AtBat(object):
         bat_mlbid = MlbamUtil.get_attribute_stats(ab, 'batter', str, MlbamConst.UNKNOWN_FULL)
         pit_player = rosters.get(pit_mlbid)
         bat_player = rosters.get(bat_mlbid)
-        return {
-            'retro_game_id': game.retro_game_id,
-            'year': game.timestamp.year,
-            'month': game.timestamp.month,
-            'day': game.timestamp.day,
-            'st_fl': game.st_fl,
-            'regseason_fl': game.regseason_fl,
-            'playoff_fl': game.playoff_fl,
-            'game_type': game.game_type,
-            'game_type_des': game.game_type_des,
-            'local_game_time': game.local_game_time,
-            'game_id': game.game_id,
-            'home_team_id': game.home_team_id,
-            'away_team_id': game.away_team_id,
-            'home_team_lg': game.home_team_lg,
-            'away_team_lg': game.away_team_lg,
-            'interleague_fl': game.interleague_fl,
-            'park_id': game.park_id,
-            'park_name': game.park_name,
-            'park_location': game.park_loc,
-            'inning_number': inning_number,
-            'bat_home_id': inning_id,
-            'outs_ct': out_ct,
-            'pit_mlbid': pit_mlbid,
-            'pit_first_name': pit_player.first,
-            'pit_last_name': pit_player.last,
-            'pit_box_name': pit_player.box_name,
-            'pit_hand_cd': MlbamUtil.get_attribute_stats(ab, 'p_throws', str, MlbamConst.UNKNOWN_FULL),
-            'bat_mlbid': bat_mlbid,
-            'bat_first_name': bat_player.first,
-            'bat_last_name': bat_player.last,
-            'bat_box_name': bat_player.box_name,
-            'bat_hand_cd': MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL),
-            'ab_number': MlbamUtil.get_attribute_stats(ab, 'num', int, None),
-            'start_bases': start_bases,
-            'end_bases': end_bases,
-            'event_outs_ct': event_outs_ct,
-            'ab_des': ab_des,
-            'event_tx': event_tx,
-            'event_cd': event_cd,
-        }
+        atbat = OrderedDict()
+        atbat['retro_game_id'] = game.retro_game_id
+        atbat['year'] = game.timestamp.year
+        atbat['month'] = game.timestamp.month
+        atbat['day'] = game.timestamp.day
+        atbat['st_fl'] = game.st_fl
+        atbat['regseason_fl'] = game.regseason_fl
+        atbat['playoff_fl'] = game.playoff_fl
+        atbat['game_type'] = game.game_type
+        atbat['game_type_des'] = game.game_type_des
+        atbat['local_game_time'] = game.local_game_time
+        atbat['game_id'] = game.game_id
+        atbat['home_team_id'] = game.home_team_id
+        atbat['away_team_id'] = game.away_team_id
+        atbat['home_team_lg'] = game.home_team_lg
+        atbat['away_team_lg'] = game.away_team_lg
+        atbat['interleague_fl'] = game.interleague_fl
+        atbat['park_id'] = game.park_id
+        atbat['park_name'] = game.park_name
+        atbat['park_location'] = game.park_loc
+        atbat['inning_number'] = inning_number
+        atbat['bat_home_id'] = inning_id
+        atbat['outs_ct'] = out_ct
+        atbat['pit_mlbid'] = pit_mlbid
+        atbat['pit_first_name'] = pit_player.first
+        atbat['pit_last_name'] = pit_player.last
+        atbat['pit_box_name'] = pit_player.box_name
+        atbat['pit_hand_cd'] = MlbamUtil.get_attribute_stats(ab, 'p_throws', str, MlbamConst.UNKNOWN_FULL)
+        atbat['bat_mlbid'] = bat_mlbid
+        atbat['bat_first_name'] = bat_player.first
+        atbat['bat_last_name'] = bat_player.last
+        atbat['bat_box_name'] = bat_player.box_name
+        atbat['bat_hand_cd'] = MlbamUtil.get_attribute_stats(ab, 'stand', str, MlbamConst.UNKNOWN_FULL)
+        atbat['ab_number'] = MlbamUtil.get_attribute_stats(ab, 'num', int, None)
+        atbat['start_bases'] = start_bases
+        atbat['end_bases'] = end_bases
+        atbat['event_outs_ct'] = event_outs_ct
+        atbat['ab_des'] = ab_des
+        atbat['event_tx'] = event_tx
+        atbat['event_cd'] = event_cd
+        return atbat
 
     @classmethod
     def result(cls, ab, pa: dict, pitch_list: list):
@@ -217,13 +217,13 @@ class AtBat(object):
         :param pitch_list: Pitching data
         :return: pa result value(dict)
         """
-        return {
-            'ball_ct': MlbamUtil.get_attribute_stats(ab, 'b', int, None),
-            'strike_ct': MlbamUtil.get_attribute_stats(ab, 's', int, None),
-            'pitch_seq': ''.join([pitch['pitch_res'] for pitch in pitch_list]),
-            'pitch_type_seq': '|'.join([pitch['pitch_type'] for pitch in pitch_list]),
-            'battedball_cd': RetroSheet.battedball_cd(pa['event_cd'], pa['event_tx'], pa['ab_des']),
-        }
+        atbat = OrderedDict()
+        atbat['ball_ct'] = MlbamUtil.get_attribute_stats(ab, 'b', int, None)
+        atbat['strike_ct'] = MlbamUtil.get_attribute_stats(ab, 's', int, None)
+        atbat['pitch_seq'] = ''.join([pitch['pitch_res'] for pitch in pitch_list])
+        atbat['pitch_type_seq'] = '|'.join([pitch['pitch_type'] for pitch in pitch_list])
+        atbat['battedball_cd'] = RetroSheet.battedball_cd(pa['event_cd'], pa['event_tx'], pa['ab_des'])
+        return atbat
 
 
 class Inning(object):
