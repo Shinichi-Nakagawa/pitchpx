@@ -4,17 +4,19 @@
 import os
 import re
 import csv
+# import asyncio
+import yaml
 import click
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from formencode import validators
 from datetime import datetime as dt
 from datetime import timedelta
-import yaml
 
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
+from multiprocessing import Pool
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -27,11 +29,12 @@ class MlbAm(object):
     PAGE_URL_GAME_DAY = 'year_{year}/month_{month}/day_{day}'
     PAGE_URL_GAME_PREFIX = 'gid_{year}_{month}_{day}_.*'
 
-    def __init__(self, base_dir, output, setting_file='setting.yml'):
+    def __init__(self, base_dir, output, days=[], setting_file='setting.yml'):
         """
         MLBAM Data set scrape
         :param base_dir: Base directory
         :param output: Output directory
+        :param days: Game Days(datetime list)
         :param setting_file: setteing file(yml)
         """
         setting = yaml.load(open(self.DELIMITER.join([base_dir, setting_file]), 'r'))
@@ -40,11 +43,16 @@ class MlbAm(object):
         self.extension = setting['config']['extension']
         self.encoding = setting['config']['encoding']
         self.output = output
+        self.days = days
 
-    def _download_game(self, ):
-        pass
+    def download(self):
+        """
+        MLBAM dataset download
+        """
+        p = Pool()
+        p.map(self._download, self.days)
 
-    def download(self, timestamp: dt):
+    def _download(self, timestamp: dt):
         """
         download MLBAM Game Day
         :param timestamp: day
@@ -62,8 +70,7 @@ class MlbAm(object):
         for gid in html.find_all('a', href=re.compile(href)):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
-            game_number = self._get_game_number(gid_path)
-            game = Game.read_xml(gid_url, self.parser, timestamp, game_number)
+            game = Game.read_xml(gid_url, self.parser, timestamp, self._get_game_number(gid_path))
             players = Players.read_xml(gid_url, self.parser)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
             atbats.extend(innings.atbats)
@@ -72,6 +79,18 @@ class MlbAm(object):
         day = "".join([timestamp_params['year'], timestamp_params['month'], timestamp_params['day']])
         self._write_csv(atbats, AtBat.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
         self._write_csv(pitches, Pitch.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
+
+    def _get_game_number(self, gid_path):
+        """
+        Game Number
+        :param gid_path: game logs directory path
+        :return: game number(int)
+        """
+        game_number = str(gid_path[len(gid_path)-2:len(gid_path)-1])
+        if game_number.isdigit():
+            return int(game_number)
+        else:
+            raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
 
     def _write_csv(self, datasets, filename):
         """
@@ -127,19 +146,6 @@ class MlbAm(object):
         return days
 
     @classmethod
-    def _get_game_number(cls, gid_path):
-        """
-        Game Number
-        :param gid_path: game logs directory path
-        :return: game number(int)
-        """
-        game_number = str(gid_path[len(gid_path)-2:len(gid_path)-1])
-        if game_number.isdigit():
-            return int(game_number)
-        else:
-            raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
-
-    @classmethod
     def scrape(cls, start, end, output):
         """
         Scrape a MLBAM Data
@@ -156,12 +162,8 @@ class MlbAm(object):
                 raise MlbAmException('{msg} a {name}.'.format(name=param_day['name'], msg=e.msg))
         cls._validate_datetime_from_to(start, end)
 
-        days = cls._days(start, end)
-
-        mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output)
-        # TODO multi processing
-        for day in days:
-            mlb.download(day)
+        mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output, cls._days(start, end))
+        mlb.download()
 
 
 class MlbAmException(Exception):
