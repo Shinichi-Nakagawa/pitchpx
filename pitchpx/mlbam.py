@@ -4,13 +4,14 @@
 import os
 import re
 import csv
+import asyncio
+import yaml
 import click
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from formencode import validators
 from datetime import datetime as dt
 from datetime import timedelta
-import yaml
 
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
@@ -27,11 +28,12 @@ class MlbAm(object):
     PAGE_URL_GAME_DAY = 'year_{year}/month_{month}/day_{day}'
     PAGE_URL_GAME_PREFIX = 'gid_{year}_{month}_{day}_.*'
 
-    def __init__(self, base_dir, output, setting_file='setting.yml'):
+    def __init__(self, base_dir, output, days=[], setting_file='setting.yml'):
         """
         MLBAM Data set scrape
         :param base_dir: Base directory
         :param output: Output directory
+        :param days: Game Days(datetime list)
         :param setting_file: setteing file(yml)
         """
         setting = yaml.load(open(self.DELIMITER.join([base_dir, setting_file]), 'r'))
@@ -40,11 +42,24 @@ class MlbAm(object):
         self.extension = setting['config']['extension']
         self.encoding = setting['config']['encoding']
         self.output = output
+        self.days = days
 
-    def _download_game(self, ):
-        pass
+    def download(self):
+        """
+        MLBAM dataset download
+        """
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(self.dataset())
 
-    def download(self, timestamp: dt):
+    async def dataset(self):
+        """
+        MLBAM dataset get
+        """
+        return await asyncio.wait(
+            [self.write(day) for day in self.days]
+        )
+
+    async def write(self, timestamp: dt):
         """
         download MLBAM Game Day
         :param timestamp: day
@@ -156,12 +171,8 @@ class MlbAm(object):
                 raise MlbAmException('{msg} a {name}.'.format(name=param_day['name'], msg=e.msg))
         cls._validate_datetime_from_to(start, end)
 
-        days = cls._days(start, end)
-
-        mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output)
-        # TODO multi processing
-        for day in days:
-            mlb.download(day)
+        mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output, cls._days(start, end))
+        mlb.download()
 
 
 class MlbAmException(Exception):
