@@ -4,7 +4,7 @@
 import os
 import re
 import csv
-import asyncio
+# import asyncio
 import yaml
 import click
 from bs4 import BeautifulSoup
@@ -16,6 +16,7 @@ from datetime import timedelta
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
+from multiprocessing import Pool
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -48,16 +49,10 @@ class MlbAm(object):
         """
         MLBAM dataset download
         """
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self.dataset())
+        p = Pool()
+        p.map(self.write, self.days)
 
-    async def dataset(self):
-        """
-        MLBAM dataset get
-        """
-        return await asyncio.wait([self.write(day) for day in self.days])
-
-    async def write(self, timestamp: dt):
+    def write(self, timestamp: dt):
         """
         download MLBAM Game Day
         :param timestamp: day
