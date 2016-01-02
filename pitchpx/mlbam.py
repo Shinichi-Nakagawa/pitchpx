@@ -158,8 +158,8 @@ class MlbAm(object):
 
         days = cls._days(start, end)
 
-        mlb = MlbAm(os.path.dirname(os.path.abspath('.')), output)
-        # TODO ここは並列化する
+        mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output)
+        # TODO multi processing
         for day in days:
             mlb.download(day)
 

@@ -1,0 +1,2 @@
+recursive-include pitchpx *.yml
+include LICENSE
