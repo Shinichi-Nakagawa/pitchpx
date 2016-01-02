@@ -9,6 +9,9 @@ __author__ = 'Shinichi Nakagawa'
 setup(
     name='pitchpx',
     version='0.1',
+    description='Tools for Acquiring MLBAM Gameday dataset',
+    author='Shinichi Nakagawa',
+    author_email='spirits.is.my.rader@gmail.com',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
