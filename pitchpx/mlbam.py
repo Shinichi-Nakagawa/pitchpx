@@ -55,9 +55,7 @@ class MlbAm(object):
         """
         MLBAM dataset get
         """
-        return await asyncio.wait(
-            [self.write(day) for day in self.days]
-        )
+        return await asyncio.wait([self.write(day) for day in self.days])
 
     async def write(self, timestamp: dt):
         """
@@ -77,8 +75,7 @@ class MlbAm(object):
         for gid in html.find_all('a', href=re.compile(href)):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
-            game_number = self._get_game_number(gid_path)
-            game = Game.read_xml(gid_url, self.parser, timestamp, game_number)
+            game = Game.read_xml(gid_url, self.parser, timestamp, self._get_game_number(gid_path))
             players = Players.read_xml(gid_url, self.parser)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
             atbats.extend(innings.atbats)
@@ -87,6 +84,18 @@ class MlbAm(object):
         day = "".join([timestamp_params['year'], timestamp_params['month'], timestamp_params['day']])
         self._write_csv(atbats, AtBat.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
         self._write_csv(pitches, Pitch.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
+
+    def _get_game_number(self, gid_path):
+        """
+        Game Number
+        :param gid_path: game logs directory path
+        :return: game number(int)
+        """
+        game_number = str(gid_path[len(gid_path)-2:len(gid_path)-1])
+        if game_number.isdigit():
+            return int(game_number)
+        else:
+            raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
 
     def _write_csv(self, datasets, filename):
         """
@@ -140,19 +149,6 @@ class MlbAm(object):
         for day in range(delta.days+1):
             days.append(start_day + timedelta(days=day))
         return days
-
-    @classmethod
-    def _get_game_number(cls, gid_path):
-        """
-        Game Number
-        :param gid_path: game logs directory path
-        :return: game number(int)
-        """
-        game_number = str(gid_path[len(gid_path)-2:len(gid_path)-1])
-        if game_number.isdigit():
-            return int(game_number)
-        else:
-            raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
 
     @classmethod
     def scrape(cls, start, end, output):
