@@ -50,9 +50,9 @@ class MlbAm(object):
         MLBAM dataset download
         """
         p = Pool()
-        p.map(self.write, self.days)
+        p.map(self._download, self.days)
 
-    def write(self, timestamp: dt):
+    def _download(self, timestamp: dt):
         """
         download MLBAM Game Day
         :param timestamp: day
