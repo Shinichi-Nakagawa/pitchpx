@@ -224,10 +224,18 @@ class Players(object):
         :param game: MLBAM Game object
         :return: pitchpx.game.players.Players object
         """
+        return Players._read_objects(MlbamUtil.find_xml("/".join([url, cls.FILENAME]), markup) ,game)
+
+    @classmethod
+    def _read_objects(cls, soup, game):
+        """
+        read objects
+        :param soup: Beautifulsoup object
+        :param game: MLBAM Game object
+        :return: pitchpx.game.players.Players object
+        """
         players = Players()
         players.game = Players.Game()
-
-        soup = MlbamUtil.find_xml("/".join([url, cls.FILENAME]), markup)
         # game data
         players.game.venue = soup.game['venue']
         players.game.date = soup.game['date']

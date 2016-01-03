@@ -71,7 +71,7 @@ class MlbAm(object):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
             # Read XML & create dataset
-            game = Game.read_xml(gid_url, self.parser, timestamp, self._get_game_number(gid_path))
+            game = Game.read_xml(gid_url, self.parser, timestamp, MlbAm._get_game_number(gid_path))
             players = Players.read_xml(gid_url, self.parser, game)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
 
@@ -95,7 +95,8 @@ class MlbAm(object):
         ):
             self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
 
-    def _get_game_number(self, gid_path):
+    @classmethod
+    def _get_game_number(cls, gid_path):
         """
         Game Number
         :param gid_path: game logs directory path
