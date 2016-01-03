@@ -19,7 +19,7 @@ class RetroSheet(object):
     EVENT_20_SINGLE = ('single', )
     EVENT_21_DOUBLE = ('double', )
     EVENT_22_TRIPLE = ('triple', )
-    EVENT_23_HOMERUN = ('home run')
+    EVENT_23_HOME_RUN = ('home run', )
     EVENT_CD_HITS = (20, 21, 22, 23)
 
     @classmethod
@@ -74,7 +74,7 @@ class RetroSheet(object):
         elif _event_tx in cls.EVENT_22_TRIPLE:
             return 22
         # HR(event_cd:22)
-        elif _event_tx in cls.EVENT_23_HOMERUN:
+        elif _event_tx in cls.EVENT_23_HOME_RUN:
             return 23
         # Runner Out
         elif _event_tx == 'runner out':

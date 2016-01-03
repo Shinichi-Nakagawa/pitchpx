@@ -4,9 +4,10 @@
 import os
 import re
 import csv
-# import asyncio
 import yaml
 import click
+import logging
+from multiprocessing import Pool
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from formencode import validators
@@ -16,7 +17,6 @@ from datetime import timedelta
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
-from multiprocessing import Pool
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -57,12 +57,16 @@ class MlbAm(object):
         download MLBAM Game Day
         :param timestamp: day
         """
-        atbats, pitches = [], []
+        games, atbats, pitches = [], [], []
+        rosters, coaches, umpires = [], [], []
         timestamp_params = {
             'year': str(timestamp.year),
             'month': str(timestamp.month).zfill(2),
             'day': str(timestamp.day).zfill(2)
         }
+
+        logging.info('->- Game data download start({year}/{month}/{day})'.format(**timestamp_params))
+
         base_url = self.DELIMITER.join([self.url, self.PAGE_URL_GAME_DAY.format(**timestamp_params)])
         html = BeautifulSoup(urlopen(base_url), self.parser)
 
@@ -70,17 +74,35 @@ class MlbAm(object):
         for gid in html.find_all('a', href=re.compile(href)):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
-            game = Game.read_xml(gid_url, self.parser, timestamp, self._get_game_number(gid_path))
-            players = Players.read_xml(gid_url, self.parser)
+            # Read XML & create dataset
+            game = Game.read_xml(gid_url, self.parser, timestamp, MlbAm._get_game_number(gid_path))
+            players = Players.read_xml(gid_url, self.parser, game)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
+
+            # append a dataset
+            games.append(game.row())
+            rosters.extend([roseter.row() for roseter in players.rosters.values()])
+            coaches.extend([coach.row() for coach in players.coaches.values()])
+            umpires.extend([umpire.row() for umpire in players.umpires.values()])
             atbats.extend(innings.atbats)
             pitches.extend(innings.pitches)
+
         # writing csv
         day = "".join([timestamp_params['year'], timestamp_params['month'], timestamp_params['day']])
-        self._write_csv(atbats, AtBat.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
-        self._write_csv(pitches, Pitch.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
+        for params in (
+                {'datasets': games, 'filename': Game.DOWNLOAD_FILE_NAME},
+                {'datasets': rosters, 'filename': Players.Player.DOWNLOAD_FILE_NAME},
+                {'datasets': coaches, 'filename': Players.Coach.DOWNLOAD_FILE_NAME},
+                {'datasets': umpires, 'filename': Players.Umpire.DOWNLOAD_FILE_NAME},
+                {'datasets': atbats, 'filename': AtBat.DOWNLOAD_FILE_NAME},
+                {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
+        ):
+            self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
 
-    def _get_game_number(self, gid_path):
+        logging.info('-<- Game data download end({year}/{month}/{day})'.format(**timestamp_params))
+
+    @classmethod
+    def _get_game_number(cls, gid_path):
         """
         Game Number
         :param gid_path: game logs directory path
@@ -153,6 +175,12 @@ class MlbAm(object):
         :param end: End Day(YYYYMMDD)
         :param output: Output directory
         """
+        # Logger setting
+        logging.basicConfig(
+            level=logging.INFO,
+            format="time:%(asctime)s.%(msecs)03d" + "\tmessage:%(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
 
         # validate
         for param_day in ({'name': 'Start Day', 'value': start}, {'name': 'End Day', 'value': end}):
@@ -162,8 +190,11 @@ class MlbAm(object):
                 raise MlbAmException('{msg} a {name}.'.format(name=param_day['name'], msg=e.msg))
         cls._validate_datetime_from_to(start, end)
 
+        # Download
+        logging.info('->- MLBAM dataset download start')
         mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output, cls._days(start, end))
         mlb.download()
+        logging.info('-<- MLBAM dataset download end')
 
 
 class MlbAmException(Exception):
