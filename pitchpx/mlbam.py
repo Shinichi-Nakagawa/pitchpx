@@ -6,6 +6,8 @@ import re
 import csv
 import yaml
 import click
+import logging
+from multiprocessing import Pool
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from formencode import validators
@@ -15,7 +17,6 @@ from datetime import timedelta
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
-from multiprocessing import Pool
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -63,6 +64,9 @@ class MlbAm(object):
             'month': str(timestamp.month).zfill(2),
             'day': str(timestamp.day).zfill(2)
         }
+
+        logging.info('->- Game data download start({year}/{month}/{day})'.format(**timestamp_params))
+
         base_url = self.DELIMITER.join([self.url, self.PAGE_URL_GAME_DAY.format(**timestamp_params)])
         html = BeautifulSoup(urlopen(base_url), self.parser)
 
@@ -94,6 +98,8 @@ class MlbAm(object):
                 {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
         ):
             self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
+
+        logging.info('-<- Game data download end({year}/{month}/{day})'.format(**timestamp_params))
 
     @classmethod
     def _get_game_number(cls, gid_path):
@@ -169,6 +175,12 @@ class MlbAm(object):
         :param end: End Day(YYYYMMDD)
         :param output: Output directory
         """
+        # Logger setting
+        logging.basicConfig(
+            level=logging.INFO,
+            format="time:%(asctime)s.%(msecs)03d" + "\tmessage:%(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
 
         # validate
         for param_day in ({'name': 'Start Day', 'value': start}, {'name': 'End Day', 'value': end}):
@@ -178,8 +190,11 @@ class MlbAm(object):
                 raise MlbAmException('{msg} a {name}.'.format(name=param_day['name'], msg=e.msg))
         cls._validate_datetime_from_to(start, end)
 
+        # Download
+        logging.info('->- MLBAM dataset download start')
         mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output, cls._days(start, end))
         mlb.download()
+        logging.info('-<- MLBAM dataset download end')
 
 
 class MlbAmException(Exception):
