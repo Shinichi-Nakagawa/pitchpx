@@ -213,6 +213,7 @@ class Players(object):
 
     def __init__(self):
         self.game = self.Game()
+        self.rosters, self.coaches, self.umpires = {}, {}, {}
 
     @classmethod
     def read_xml(cls, url, markup, game):

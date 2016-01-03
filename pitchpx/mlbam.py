@@ -57,6 +57,7 @@ class MlbAm(object):
         :param timestamp: day
         """
         games, atbats, pitches = [], [], []
+        rosters, coaches, umpires = [], [], []
         timestamp_params = {
             'year': str(timestamp.year),
             'month': str(timestamp.month).zfill(2),
@@ -69,17 +70,30 @@ class MlbAm(object):
         for gid in html.find_all('a', href=re.compile(href)):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
+            # Read XML & create dataset
             game = Game.read_xml(gid_url, self.parser, timestamp, self._get_game_number(gid_path))
             players = Players.read_xml(gid_url, self.parser, game)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
+
+            # append a dataset
             games.append(game.row())
+            rosters.extend([roseter.row() for roseter in players.rosters.values()])
+            coaches.extend([coach.row() for coach in players.coaches.values()])
+            umpires.extend([umpire.row() for umpire in players.umpires.values()])
             atbats.extend(innings.atbats)
             pitches.extend(innings.pitches)
+
         # writing csv
         day = "".join([timestamp_params['year'], timestamp_params['month'], timestamp_params['day']])
-        self._write_csv(games, Game.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
-        self._write_csv(atbats, AtBat.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
-        self._write_csv(pitches, Pitch.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
+        for params in (
+                {'datasets': games, 'filename': Game.DOWNLOAD_FILE_NAME},
+                {'datasets': rosters, 'filename': Players.Player.DOWNLOAD_FILE_NAME},
+                {'datasets': coaches, 'filename': Players.Coach.DOWNLOAD_FILE_NAME},
+                {'datasets': umpires, 'filename': Players.Umpire.DOWNLOAD_FILE_NAME},
+                {'datasets': atbats, 'filename': AtBat.DOWNLOAD_FILE_NAME},
+                {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
+        ):
+            self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
 
     def _get_game_number(self, gid_path):
         """
