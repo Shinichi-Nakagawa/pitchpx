@@ -96,6 +96,9 @@ class TestInning(TestCase):
 <runner id="572122" start="" end="2B" event="Double" event_num="42"/>
 </atbat>
     """
+    XML_PITCH = """
+<pitch des="In play, no out" des_es="En juego, no out" id="40" type="X" tfs="195157" tfs_zulu="2015-08-12T19:51:57Z" x="145.09" y="181.03" event_num="40" sv_id="150812_125336" play_guid="6040a271-f03e-4e9f-8271-1da1d548601d" start_speed="84.7" end_speed="77.2" sz_top="3.35" sz_bot="1.43" pfx_x="-5.16" pfx_z="4.14" px="-0.737" pz="2.139" x0="-2.661" y0="50.0" z0="6.176" vx0="6.301" vy0="-123.94" vz0="-4.51" ax="-7.897" ay="28.521" az="-25.771" break_y="23.7" break_angle="13.7" break_length="7.3" pitch_type="FS" type_confidence="2.000" zone="13" nasty="41" spin_dir="230.964" spin_rate="1190.061" cc="" mt=""/>
+    """
 
     def setUp(self):
         self.inning_01 = BeautifulSoup(TestInning.XML_INNING_01, 'lxml')
@@ -173,6 +176,7 @@ class TestInning(TestCase):
         self.assertEqual(ab['ab_number'], 5)
         self.assertEqual(ab['start_bases'], '___')
         self.assertEqual(ab['end_bases'], '_2_')
+        self.assertEqual(ab['event_outs_ct'], 1)
         self.assertEqual(ab['ab_des'], 'Kyle Seager doubles (26) on a line drive to right fielder Gerardo Parra. ')
         self.assertEqual(ab['event_tx'], 'Double')
         self.assertEqual(ab['event_cd'], 21)
@@ -197,6 +201,100 @@ class TestInning(TestCase):
         self.assertEqual(ab['pitch_seq'], 'SSSX')
         self.assertEqual(ab['pitch_type_seq'], 'SL|FF|FF|FS')
         self.assertEqual(ab['battedball_cd'], 'L')
+
+    def test_pitch(self):
+        """
+        pitch dataset(Result)
+        """
+        soup = BeautifulSoup(TestInning.XML_ATBAT_DATASET, 'lxml').find('atbat')
+        pa = AtBat.pa(
+            soup,
+            self.game,
+            self.players.rosters,
+            1,
+            1,
+            1
+        )
+        pitch = Pitch.row(
+            BeautifulSoup(TestInning.XML_PITCH, 'lxml').find('pitch'),
+            pa,
+            self.innings._get_pitch(soup, pa)[0:3],
+            0,
+            0,
+        )
+        self.assertEqual(pitch['retro_game_id'], 'SEA201508120')
+        self.assertEqual(pitch['year'], 2015)
+        self.assertEqual(pitch['month'], 8)
+        self.assertEqual(pitch['day'], 12)
+        self.assertEqual(pitch['st_fl'], 'F')
+        self.assertEqual(pitch['regseason_fl'], 'T')
+        self.assertEqual(pitch['playoff_fl'], 'F')
+        self.assertEqual(pitch['game_type'], 'R')
+        self.assertEqual(pitch['game_type_des'], 'Regular Season')
+        self.assertEqual(pitch['local_game_time'], '12:40')
+        self.assertEqual(pitch['game_id'], '415346')
+        self.assertEqual(pitch['home_team_id'], 'sea')
+        self.assertEqual(pitch['away_team_id'], 'bal')
+        self.assertEqual(pitch['home_team_lg'], 'AL')
+        self.assertEqual(pitch['away_team_lg'], 'AL')
+        self.assertEqual(pitch['interleague_fl'], 'F')
+        self.assertEqual(pitch['park_id'], '680')
+        self.assertEqual(pitch['park_name'], 'Safeco Field')
+        self.assertEqual(pitch['park_location'], 'Seattle, WA')
+        self.assertEqual(pitch['inning_number'], 1)
+        self.assertEqual(pitch['bat_home_id'], 1)
+        self.assertEqual(pitch['outs_ct'], 1)
+        self.assertEqual(pitch['pit_mlbid'], '592332')
+        self.assertEqual(pitch['pit_first_name'], 'Kevin')
+        self.assertEqual(pitch['pit_last_name'], 'Gausman')
+        self.assertEqual(pitch['pit_box_name'], 'Gausman')
+        self.assertEqual(pitch['pit_hand_cd'], 'R')
+        self.assertEqual(pitch['bat_mlbid'], '572122')
+        self.assertEqual(pitch['bat_first_name'], 'Kyle')
+        self.assertEqual(pitch['bat_last_name'], 'Seager')
+        self.assertEqual(pitch['bat_box_name'], 'Seager, K')
+        self.assertEqual(pitch['bat_hand_cd'], 'L')
+        self.assertEqual(pitch['ab_number'], 5)
+        self.assertEqual(pitch['start_bases'], '___')
+        self.assertEqual(pitch['end_bases'], '_2_')
+        self.assertEqual(pitch['event_outs_ct'], 1)
+        self.assertEqual(pitch['pa_ball_ct'], 0)
+        self.assertEqual(pitch['pa_strike_ct'], 0)
+        self.assertEqual(pitch['pitch_seq'], 'SSSX')
+        self.assertEqual(pitch['pa_terminal_fl'], 'T')
+        self.assertEqual(pitch['pa_event_cd'], 21)
+        self.assertEqual(pitch['pitch_res'], 'X')
+        self.assertEqual(pitch['pitch_des'], 'In play, no out')
+        self.assertEqual(pitch['pitch_id'], 40)
+        self.assertEqual(pitch['x'], 145.09)
+        self.assertEqual(pitch['y'], 181.03)
+        self.assertEqual(pitch['start_speed'], 84.7)
+        self.assertEqual(pitch['end_speed'], 77.2)
+        self.assertEqual(pitch['sz_top'], 3.35)
+        self.assertEqual(pitch['sz_bot'], 1.43)
+        self.assertEqual(pitch['pfx_x'], -5.16)
+        self.assertEqual(pitch['pfx_z'], 4.14)
+        self.assertEqual(pitch['px'], -0.737)
+        self.assertEqual(pitch['pz'], 2.139)
+        self.assertEqual(pitch['x0'], -2.661)
+        self.assertEqual(pitch['y0'], 50.0)
+        self.assertEqual(pitch['z0'], 6.176)
+        self.assertEqual(pitch['vx0'], 6.301)
+        self.assertEqual(pitch['vy0'], -123.94)
+        self.assertEqual(pitch['vz0'], -4.51)
+        self.assertEqual(pitch['ax'], -7.897)
+        self.assertEqual(pitch['ay'], 28.521)
+        self.assertEqual(pitch['az'], -25.771)
+        self.assertEqual(pitch['break_y'], 23.7)
+        self.assertEqual(pitch['break_angle'], 13.7)
+        self.assertEqual(pitch['break_length'], 7.3)
+        self.assertEqual(pitch['pitch_type'], 'FS')
+        self.assertEqual(pitch['pitch_type_seq'], 'SL|FF|FF|FS')
+        self.assertEqual(pitch['type_confidence'], 2.0)
+        self.assertEqual(pitch['zone'], 13)
+        self.assertEqual(pitch['spin_dir'], 230.964)
+        self.assertEqual(pitch['spin_rate'], 1190.061)
+        self.assertEqual(pitch['sv_id'], '150812_125336')
 
 if __name__ == '__main__':
     main()
