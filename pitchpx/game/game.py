@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+from collections import OrderedDict
 from pitchpx.mlbam_util import MlbamUtil, MlbamConst
 
 __author__ = 'Shinichi Nakagawa'
@@ -43,6 +43,34 @@ class Game(object):
         :param timestamp: game day
         """
         self.timestamp = timestamp
+
+    def row(self):
+        """
+        Game Dataset(Row)
+        :return: game dataset(dict)
+        """
+        row = OrderedDict()
+        row['retro_game_id'] = self.retro_game_id
+        row['game_type'] = self.game_type
+        row['game_type_des'] = self.game_type_des
+        row['st_fl'] = self.st_fl
+        row['regseason_fl'] = self.regseason_fl
+        row['playoff_fl'] = self.playoff_fl
+        row['local_game_time'] = self.local_game_time
+        row['game_id'] = self.game_id
+        row['home_team_id'] = self.home_team_id
+        row['home_team_lg'] = self.home_team_lg
+        row['away_team_id'] = self.away_team_id
+        row['away_team_lg'] = self.away_team_lg
+        row['home_team_name'] = self.home_team_name
+        row['away_team_name'] = self.away_team_name
+        row['home_team_name_full'] = self.home_team_name_full
+        row['away_team_name_full'] = self.away_team_name_full
+        row['interleague_fl'] = self.interleague_fl
+        row['park_id'] = self.park_id
+        row['park_name'] = self.park_name
+        row['park_loc'] = self.park_loc
+        return row
 
     @classmethod
     def read_xml(cls, url, markup, timestamp, game_number):

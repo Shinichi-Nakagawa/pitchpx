@@ -34,6 +34,39 @@ class TestGame(TestCase):
         self.game = None
         self.dummy = None
 
+    def test_row(self):
+        """
+        Game Object Data(row data)
+        """
+        game = Game._generate_game_object(self.game, dt.strptime('2015-08-13', '%Y-%m-%d'), 2)
+        row = game.row()
+
+        # Base Data
+        self.assertEqual(row['game_type'], 'R')
+        self.assertEqual(row['game_type_des'], 'Regular Season')
+        self.assertEqual(row['st_fl'], 'F')
+        self.assertEqual(row['regseason_fl'], 'T')
+        self.assertEqual(row['local_game_time'], '12:40')
+        self.assertEqual(row['game_id'], '415346')
+
+        # Team Data
+        self.assertEqual(row['home_team_id'], 'sea')
+        self.assertEqual(row['away_team_id'], 'bal')
+        self.assertEqual(row['home_team_lg'], 'AL')
+        self.assertEqual(row['away_team_lg'], 'AL')
+        self.assertEqual(row['home_team_name'], 'Seattle')
+        self.assertEqual(row['away_team_name'], 'Baltimore')
+        self.assertEqual(row['home_team_name_full'], 'Seattle Mariners')
+        self.assertEqual(row['away_team_name_full'], 'Baltimore Orioles')
+
+        # Stadium Data
+        self.assertEqual(row['park_id'], '680')
+        self.assertEqual(row['park_name'], 'Safeco Field')
+        self.assertEqual(row['park_loc'], 'Seattle, WA')
+
+        # Retro ID
+        self.assertEqual(row['retro_game_id'], 'SEA201508131')
+
     def test_generate_game_object(self):
         """
         Game Object Data
