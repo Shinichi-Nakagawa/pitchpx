@@ -70,7 +70,7 @@ class MlbAm(object):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
             game = Game.read_xml(gid_url, self.parser, timestamp, self._get_game_number(gid_path))
-            players = Players.read_xml(gid_url, self.parser)
+            players = Players.read_xml(gid_url, self.parser, game)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
             games.append(game.row())
             atbats.extend(innings.atbats)
