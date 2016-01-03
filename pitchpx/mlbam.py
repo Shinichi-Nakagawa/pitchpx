@@ -4,7 +4,6 @@
 import os
 import re
 import csv
-# import asyncio
 import yaml
 import click
 from bs4 import BeautifulSoup
@@ -57,7 +56,7 @@ class MlbAm(object):
         download MLBAM Game Day
         :param timestamp: day
         """
-        atbats, pitches = [], []
+        games, atbats, pitches = [], [], []
         timestamp_params = {
             'year': str(timestamp.year),
             'month': str(timestamp.month).zfill(2),
@@ -73,10 +72,12 @@ class MlbAm(object):
             game = Game.read_xml(gid_url, self.parser, timestamp, self._get_game_number(gid_path))
             players = Players.read_xml(gid_url, self.parser)
             innings = Inning.read_xml(gid_url, self.parser, game, players)
+            games.append(game.row())
             atbats.extend(innings.atbats)
             pitches.extend(innings.pitches)
         # writing csv
         day = "".join([timestamp_params['year'], timestamp_params['month'], timestamp_params['day']])
+        self._write_csv(games, Game.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
         self._write_csv(atbats, AtBat.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
         self._write_csv(pitches, Pitch.DOWNLOAD_FILE_NAME.format(day=day, extension=self.extension))
 
