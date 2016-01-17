@@ -146,7 +146,8 @@ class AtBat(object):
         return ''.join(start_bases), ''.join(end_bases)
 
     @classmethod
-    def pa(cls, ab, game: Game, rosters: dict, inning_number: int, inning_id: int, out_ct: int) -> dict:
+    def pa(cls, ab, game: Game, rosters: dict, inning_number: int, inning_id: int, out_ct: int, hit_location: dict)\
+            -> dict:
         """
         plate appearance data
         :param ab: at bat object(type:Beautifulsoup)
@@ -156,6 +157,7 @@ class AtBat(object):
         :param inning_id: Inning Id(0:home 1:away)
         :param pitch_list: Pitching
         :param out_ct: out count
+        :param hit_location: Hitlocation data(dict)
         :return: pa value(dict)
         """
         ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
@@ -167,6 +169,13 @@ class AtBat(object):
         bat_mlbid = MlbamUtil.get_attribute_stats(ab, 'batter', str, MlbamConst.UNKNOWN_FULL)
         pit_player = rosters.get(pit_mlbid)
         bat_player = rosters.get(bat_mlbid)
+        location_key = Inning.HITLOCATION_KEY_FORMAT.format(
+            inning=inning_number,
+            des=event_tx,
+            pitcher=pit_mlbid,
+            batter=bat_mlbid,
+        )
+        location = hit_location.get(location_key, {})
         atbat = OrderedDict()
         atbat['retro_game_id'] = game.retro_game_id
         atbat['year'] = game.timestamp.year
@@ -207,6 +216,8 @@ class AtBat(object):
         atbat['ab_des'] = ab_des
         atbat['event_tx'] = event_tx
         atbat['event_cd'] = event_cd
+        atbat['hit_x'] = location.get('hit_x', None)
+        atbat['hit_y'] = location.get('hit_y', None)
         return atbat
 
     @classmethod
@@ -231,6 +242,8 @@ class Inning(object):
 
     DIRECTORY = 'inning'
     FILENAME_PATTERN = 'inning_\d*.xml'
+    FILENAME_INNING_HIT = 'inning_hit.xml'
+    HITLOCATION_KEY_FORMAT = '{inning}_{des}_{pitcher}_{batter}'
     TAG = 'a'
     INNING_TOP = 'top'
     INNING_BOTTOM = 'bottom'
@@ -261,28 +274,56 @@ class Inning(object):
         """
         innings = Inning(game, players)
         base_url = "".join([url, cls.DIRECTORY])
+        # hit location data
+        hit_location = cls._read_hit_chart_data(
+                MlbamUtil.find_xml('/'.join([base_url, cls.FILENAME_INNING_HIT]), markup)
+        )
+
+        # create for atbat & pitch data
         for inning in MlbamUtil.find_xml_all(base_url, markup, cls.TAG, cls.FILENAME_PATTERN):
             soup = MlbamUtil.find_xml("/".join([base_url, inning.get_text().strip()]), markup)
             inning_number = int(soup.inning['num'])
-            for inning in cls.INNINGS.keys():
-                inning_soup = soup.inning.find(inning)
+            for inning_type in cls.INNINGS.keys():
+                inning_soup = soup.inning.find(inning_type)
                 if inning_soup is None:
                     break
-                innings._inning_events(inning_soup, inning_number, cls.INNINGS[inning])
+                innings._inning_events(inning_soup, inning_number, cls.INNINGS[inning_type], hit_location)
         return innings
 
-    def _inning_events(self, soup, inning_number, inning_id):
+    @classmethod
+    def _read_hit_chart_data(cls, soup):
+        """
+
+        :param soup: Beautifulsoup object
+        :return: dictionary data
+        """
+        hit_chart = {}
+        for hip in soup.find_all('hip'):
+            key = cls.HITLOCATION_KEY_FORMAT.format(
+                inning=MlbamUtil.get_attribute_stats(hip, 'inning', int),
+                des=MlbamUtil.get_attribute_stats(hip, 'des', str),
+                pitcher=MlbamUtil.get_attribute_stats(hip, 'pitcher', str),
+                batter=MlbamUtil.get_attribute_stats(hip, 'batter', str),
+            )
+            hit_chart[key] = {
+                'hit_x': MlbamUtil.get_attribute_stats(hip, 'x', float, None),
+                'hit_y': MlbamUtil.get_attribute_stats(hip, 'y', float, None),
+            }
+        return hit_chart
+
+    def _inning_events(self, soup, inning_number, inning_id, hit_location):
         """
         Inning Events.
         :param soup: Beautifulsoup object
         :param inning_number: Inning Number
         :param inning_id: Inning Id(0:home, 1:away)
+        :param hit_location: Hitlocation data(dict)
         """
         # at bat(batter box data) & pitching data
         out_ct = 0
         for ab in soup.find_all('atbat'):
             # plate appearance data(pa)
-            at_bat = AtBat.pa(ab, self.game, self.players.rosters, inning_number, inning_id, out_ct)
+            at_bat = AtBat.pa(ab, self.game, self.players.rosters, inning_number, inning_id, out_ct, hit_location)
             # pitching data
             pitching_stats = self._get_pitch(ab, at_bat)
             # at bat(pa result)
