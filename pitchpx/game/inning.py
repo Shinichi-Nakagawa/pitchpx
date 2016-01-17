@@ -283,11 +283,11 @@ class Inning(object):
         for inning in MlbamUtil.find_xml_all(base_url, markup, cls.TAG, cls.FILENAME_PATTERN):
             soup = MlbamUtil.find_xml("/".join([base_url, inning.get_text().strip()]), markup)
             inning_number = int(soup.inning['num'])
-            for inning in cls.INNINGS.keys():
-                inning_soup = soup.inning.find(inning)
+            for inning_type in cls.INNINGS.keys():
+                inning_soup = soup.inning.find(inning_type)
                 if inning_soup is None:
                     break
-                innings._inning_events(inning_soup, inning_number, cls.INNINGS[inning], hit_location)
+                innings._inning_events(inning_soup, inning_number, cls.INNINGS[inning_type], hit_location)
         return innings
 
     @classmethod
