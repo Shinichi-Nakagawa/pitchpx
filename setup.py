@@ -17,7 +17,7 @@ def read_file(filename):
 
 setup(
     name='pitchpx',
-    version='1.2',
+    version='1.3',
     description='Tools for Acquiring MLBAM Gameday dataset',
     long_description=read_file('README.rst'),
     author='Shinichi Nakagawa',
@@ -33,15 +33,13 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
-    keywords=['baseball', 'MLB', 'MLBAM'],
+    keywords=['baseball', 'MLB', 'MLBAM', 'SABRmetrics', 'SABR', 'Major league baseball'],
     license='MIT License',
     install_requires=[
         'beautifulsoup4',
         'click',
         'FormEncode',
         'lxml',
-        'python-dateutil',
-        'pytz',
         'PyYAML',
     ],
     entry_points="""
