@@ -23,10 +23,13 @@ download(MLBAM dataset)
 
     $ pitchpx [-s, --start <from 8-digit-datetime(YYYYMMDD)>] [-e, --end <to 8-digit-datetime(YYYYMMDD)>] [-o, --output <download file path>]
 
-* -s, --start       : Start Day(YYYYMMDD)
-* -e, --end         : End Day(YYYYMMDD)
-* -o, --output      : Output directory(default:".")
-* -help             : pitchpx command help
+    -s, --start       : Start Day(YYYYMMDD)
+
+    -e, --end         : End Day(YYYYMMDD)
+
+    -o, --output      : Output directory(default:".")
+
+    -help             : pitchpx command help
 
 
 License
