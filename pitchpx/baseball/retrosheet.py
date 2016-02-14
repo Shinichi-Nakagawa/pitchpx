@@ -23,7 +23,7 @@ class RetroSheet(object):
     EVENT_CD_HITS = (20, 21, 22, 23)
 
     @classmethod
-    def event_cd(cls, event_tx: str, ab_des: str) -> int:
+    def event_cd(cls, event_tx, ab_des):
         """
         Event Code for Retrosheet
         :param event_tx: Event text
@@ -92,7 +92,7 @@ class RetroSheet(object):
             return 0
 
     @classmethod
-    def battedball_cd(cls, event_cd:int, event_tx: str, ab_des: str) -> str:
+    def battedball_cd(cls, event_cd, event_tx, ab_des):
         """
         Batted ball Code for Retrosheet
         :param event_cd: Event code
@@ -124,7 +124,7 @@ class RetroSheet(object):
             return ''
 
     @classmethod
-    def _battedball_cd(cls, ab_des: str) -> str:
+    def _battedball_cd(cls, ab_des):
         """
         Batted ball Code for at bat description
         :param ab_des: at bat description
@@ -151,7 +151,7 @@ class RetroSheet(object):
             return ''
 
     @classmethod
-    def ball_count(cls, ball_tally: int, strike_tally: int, pitch_res: str):
+    def ball_count(cls, ball_tally, strike_tally, pitch_res):
         """
         Ball/Strike counter
         :param ball_tally: Ball telly
@@ -172,7 +172,7 @@ class RetroSheet(object):
         return b, s
 
     @classmethod
-    def is_pa_terminal(cls, ball_tally: int, strike_tally: int, pitch_res: str, event_cd: int):
+    def is_pa_terminal(cls, ball_tally, strike_tally, pitch_res, event_cd):
         """
         Is PA terminal
         :param ball_tally: Ball telly

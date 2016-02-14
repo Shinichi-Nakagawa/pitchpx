@@ -30,7 +30,8 @@ class MlbamUtil(object):
         :param pattern: xml file pattern
         :return: BeautifulSoup object list
         """
-        return BeautifulSoup(urlopen(url), markup).find_all(tag, href=re.compile(pattern))
+        body = cls.find_xml(url, markup)
+        return body.find_all(tag, href=re.compile(pattern))
 
     @classmethod
     def get_attribute(cls, soup, key, unknown=None):
