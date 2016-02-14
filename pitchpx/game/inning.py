@@ -14,7 +14,7 @@ class Pitch(object):
     DOWNLOAD_FILE_NAME = 'mlbam_pitch_{day}.{extension}'
 
     @classmethod
-    def is_pa_terminal(cls, ball_tally: int, strike_tally: int, pitch_res: str, event_cd: int) -> str:
+    def is_pa_terminal(cls, ball_tally, strike_tally, pitch_res, event_cd):
         """
         Is PA terminal
         :param ball_tally: Ball telly
@@ -28,7 +28,7 @@ class Pitch(object):
         return MlbamConst.FLG_FALSE
 
     @classmethod
-    def row(cls, pitch, pa: dict, pitch_list: list, ball_tally: int, strike_tally: int) -> dict:
+    def row(cls, pitch, pa, pitch_list, ball_tally, strike_tally):
         """
         Pitching Result
         :param pitch: pitch object(type:Beautifulsoup)
@@ -126,7 +126,7 @@ class AtBat(object):
     DOWNLOAD_FILE_NAME = 'mlbam_atbat_{day}.{extension}'
 
     @classmethod
-    def _get_bases(cls, ab) -> str:
+    def _get_bases(cls, ab):
         """
         Start Bases & End Bases
         :param ab: at bat object(type:Beautifulsoup)
@@ -146,8 +146,7 @@ class AtBat(object):
         return ''.join(start_bases), ''.join(end_bases)
 
     @classmethod
-    def pa(cls, ab, game: Game, rosters: dict, inning_number: int, inning_id: int, out_ct: int, hit_location: dict)\
-            -> dict:
+    def pa(cls, ab, game, rosters, inning_number, inning_id, out_ct, hit_location):
         """
         plate appearance data
         :param ab: at bat object(type:Beautifulsoup)
@@ -221,7 +220,7 @@ class AtBat(object):
         return atbat
 
     @classmethod
-    def result(cls, ab, pa: dict, pitch_list: list):
+    def result(cls, ab, pa, pitch_list):
         """
         At Bat Result
         :param ab: at bat object(type:Beautifulsoup)

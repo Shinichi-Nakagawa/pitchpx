@@ -8,12 +8,11 @@ import yaml
 import click
 import logging
 from multiprocessing import Pool
-from bs4 import BeautifulSoup
-from urllib.request import urlopen
 from formencode import validators
 from datetime import datetime as dt
 from datetime import timedelta
 
+from pitchpx.mlbam_util import MlbamUtil
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
@@ -52,7 +51,7 @@ class MlbAm(object):
         p = Pool()
         p.map(self._download, self.days)
 
-    def _download(self, timestamp: dt):
+    def _download(self, timestamp):
         """
         download MLBAM Game Day
         :param timestamp: day
@@ -68,7 +67,7 @@ class MlbAm(object):
         logging.info('->- Game data download start({year}/{month}/{day})'.format(**timestamp_params))
 
         base_url = self.DELIMITER.join([self.url, self.PAGE_URL_GAME_DAY.format(**timestamp_params)])
-        html = BeautifulSoup(urlopen(base_url), self.parser)
+        html = MlbamUtil.find_xml(base_url, self.parser)
 
         href = self.PAGE_URL_GAME_PREFIX.format(**timestamp_params)
         for gid in html.find_all('a', href=re.compile(href)):
@@ -125,8 +124,8 @@ class MlbAm(object):
             for i, row in enumerate(datasets):
                 if i == 0:
                     # header
-                    writer.writerow(row.keys())
-                writer.writerow(row.values())
+                    writer.writerow(list(row.keys()))
+                writer.writerow(list(row.values()))
 
     @classmethod
     def _validate_datetime(cls, value):

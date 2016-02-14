@@ -17,17 +17,18 @@ def read_file(filename):
 
 setup(
     name='pitchpx',
-    version='1.3',
-    description='Tools for Acquiring MLBAM Gameday dataset',
+    version='2.0',
     long_description=read_file('README.rst'),
     author='Shinichi Nakagawa',
     author_email='spirits.is.my.rader@gmail.com',
     url='https://github.com/Shinichi-Nakagawa/pitchpx',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3 :: Only',
     ],

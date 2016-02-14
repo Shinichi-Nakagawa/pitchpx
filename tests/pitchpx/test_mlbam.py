@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from unittest import TestCase, main
-from pitchpx.mlbam import MlbAm, MlbAmException
+from pitchpx.mlbam import MlbAm
 
 __author__ = 'Shinichi Nakagawa'
 
