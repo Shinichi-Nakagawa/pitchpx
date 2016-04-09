@@ -73,16 +73,16 @@ class Game(object):
         return row
 
     @classmethod
-    def read_xml(cls, url, markup, timestamp, game_number):
+    def read_xml(cls, url, features, timestamp, game_number):
         """
         read xml object
         :param url: contents url
-        :param markup: markup provider
+        :param features: markup provider
         :param timestamp: game day
         :param game_number: game number
         :return: pitchpx.game.game.Game object
         """
-        soup = MlbamUtil.find_xml("/".join([url, cls.FILENAME]), markup)
+        soup = MlbamUtil.find_xml("".join([url, cls.FILENAME]), features)
         return cls._generate_game_object(soup, timestamp, game_number)
 
     @classmethod
