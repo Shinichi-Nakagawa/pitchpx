@@ -16,3 +16,11 @@ script:
 
 after_success:
   - echo ===================pitchpx testing end==============================
+
+deploy:
+  provider: pypi
+  user: ...
+  password: ...
+  distributions: "bdist_wheel"
+  on:
+    branch: master
