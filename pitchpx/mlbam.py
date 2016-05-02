@@ -12,7 +12,7 @@ from formencode import validators
 from datetime import datetime as dt
 from datetime import timedelta
 
-from pitchpx.mlbam_util import MlbamUtil
+from pitchpx.mlbam_util import MlbamUtil, MlbAmException, MlbAmHttpNotFound, MlbAmBadParameter
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
@@ -74,9 +74,13 @@ class MlbAm(object):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
             # Read XML & create dataset
-            game = Game.read_xml(gid_url, self.parser, timestamp, MlbAm._get_game_number(gid_path))
-            players = Players.read_xml(gid_url, self.parser, game)
-            innings = Inning.read_xml(gid_url, self.parser, game, players)
+            try:
+                game = Game.read_xml(gid_url, self.parser, timestamp, MlbAm._get_game_number(gid_path))
+                players = Players.read_xml(gid_url, self.parser, game)
+                innings = Inning.read_xml(gid_url, self.parser, game, players)
+            except MlbAmHttpNotFound as e:
+                logging.warning(e.msg)
+                continue
 
             # append a dataset
             games.append(game.row())
@@ -194,17 +198,6 @@ class MlbAm(object):
         mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output, cls._days(start, end))
         mlb.download()
         logging.info('-<- MLBAM dataset download end')
-
-
-class MlbAmException(Exception):
-
-    def __init__(self, msg):
-        Exception.__init__(self, msg)
-        self.msg = msg
-
-
-class MlbAmBadParameter(MlbAmException):
-    pass
 
 
 @click.command()

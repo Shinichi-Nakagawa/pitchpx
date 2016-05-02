@@ -4,6 +4,7 @@
 import re
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+from urllib.error import HTTPError
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -11,14 +12,19 @@ __author__ = 'Shinichi Nakagawa'
 class MlbamUtil(object):
 
     @classmethod
-    def find_xml(cls, url, markup):
+    def find_xml(cls, url, features):
         """
         find xml
         :param url: contents url
-        :param markup: markup provider
+        :param features: markup provider
         :return: BeautifulSoup object
         """
-        return BeautifulSoup(urlopen(url), markup)
+        try:
+            return BeautifulSoup(urlopen(url), features)
+        except HTTPError as e:
+            msg = 'HTTP Error url: {url} msg: {msg}'.format(url=url, msg=e.msg)
+            raise MlbAmHttpNotFound(msg)
+
 
     @classmethod
     def find_xml_all(cls, url, markup, tag, pattern):
@@ -68,3 +74,18 @@ class MlbamConst(object):
     UNKNOWN_SHORT = 'U'
     FLG_TRUE = 'T'
     FLG_FALSE = 'F'
+
+
+class MlbAmException(Exception):
+
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
+        self.msg = msg
+
+
+class MlbAmBadParameter(MlbAmException):
+    pass
+
+
+class MlbAmHttpNotFound(MlbAmException):
+    pass
