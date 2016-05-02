@@ -1,29 +1,23 @@
 language: python
-
 cache: pip
-
 python:
-  - 3.3
-  - 3.4
-  - 3.5
-
+- 3.3
+- 3.4
+- 3.5
 before_install:
-  - echo ===================pitchpx testing start============================
-
+- echo ===================pitchpx testing start============================
 install:
-  - pip install -r requirements.txt
-
+- pip install -r requirements.txt
 script:
-  - py.test ./tests
-
+- py.test ./tests
 after_success:
-  - echo ===================pitchpx testing end==============================
-
+- echo ===================pitchpx testing end==============================
 deploy:
   provider: pypi
-  user: ...
-  password: ...
-  distributions: "bdist_wheel"
+  user: shinyorke
+  password:
+    secure: K5aT8Ju/An3IEFOKtV1DtkhbCGeoKk0ckqniPEntwkgKcjQ1pBGlYfzm/TnlkCwA7LpxemRd58jOEA0cvb7ZBlYOr2+ZWuKReho88e/3zerv5H0QgldjNQtknvIcTlcyT2wJR1LrGbl2jPNSAhGYre78HrfuhbhsPu9U5amzoura6Gqz846/+IkXDT3p7JjWhr27deLMzIqB/hDtm5Vvn4ritZtrRhJ4RvGZBYRRRqQrFhjGkotbCjpBFpWsJA6wOv5xLeI+1KoKWjmYHceUGxQuMJbHInV/jkJSdBZ6E45imB4PYglu3/mB64NbbrqChEvNQdeFt2aSP8VsH5Qj/uIyjRZmbl5J607bTHZeVsQSp4aGPXyKvfnCaW26UZVDDYjf19Eaoa2LZ7DeSJp5KXFF9GtfUJBuSjLlzADvdx9+Lc7FawWAhQih7ZFOMYKZwIS0JVQ+T8VGsFacmxbWycDwa0LHLD7A5J69JFFMRnhqwgw7h3oeWfdGhelr3AqioAQ7T6wncegUQq9nAuSQdozp7F0VNwZBXeyR0AML3yVcRhco3CZyWTO/ULB4hF8BmzPKmdZex7fRp44MGFxkxV+k3gJE3jPOjV4eAGqgR1sqtzbYZoWsEnOg/azD1/ttm1opmDk06unVnxvD9+ueBrmw0SPRWm4OFQ//scJOqgU=
+  distributions: bdist_wheel
   on:
     branch: master
     python: 3.5
