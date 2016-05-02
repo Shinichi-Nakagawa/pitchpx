@@ -1,0 +1,26 @@
+language: python
+
+python:
+  - 3.3
+  - 3.4
+  - 3.5
+
+before_install:
+  - echo ===================pitchpx testing start============================
+
+install:
+  - pip install -r requirements.txt
+
+script:
+  - py.test ./tests
+
+after_success:
+  - echo ===================pitchpx testing end==============================
+
+deploy:
+  provider: pypi
+  user: ...
+  password: ...
+  distributions: "bdist_wheel"
+  on:
+    branch: master
