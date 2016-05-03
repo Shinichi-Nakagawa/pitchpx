@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import click
 from pitchpx.mlbam import MlbAm, MlbAmBadParameter
 
@@ -19,6 +20,7 @@ def main(start, end, out):
     :param out: Output directory(default:"../output/mlb")
     """
     try:
+        logging.basicConfig(level=logging.WARNING)
         MlbAm.scrape(start, end, out)
     except MlbAmBadParameter as e:
         raise click.BadParameter(e)
