@@ -11,6 +11,7 @@ from multiprocessing import Pool
 from formencode import validators
 from datetime import datetime as dt
 from datetime import timedelta
+import time
 
 from pitchpx.mlbam_util import MlbamUtil, MlbAmException, MlbAmHttpNotFound, MlbAmBadParameter
 from pitchpx.game.game import Game
@@ -101,6 +102,7 @@ class MlbAm(object):
                 {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
         ):
             self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
+        time.sleep(2)
 
         logging.info('-<- Game data download end({year}/{month}/{day})'.format(**timestamp_params))
 
