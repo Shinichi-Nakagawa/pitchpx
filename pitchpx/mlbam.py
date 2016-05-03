@@ -11,8 +11,9 @@ from multiprocessing import Pool
 from formencode import validators
 from datetime import datetime as dt
 from datetime import timedelta
+import time
 
-from pitchpx.mlbam_util import MlbamUtil
+from pitchpx.mlbam_util import MlbamUtil, MlbAmException, MlbAmHttpNotFound, MlbAmBadParameter
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
@@ -74,9 +75,13 @@ class MlbAm(object):
             gid_path = gid.get_text().strip()
             gid_url = self.DELIMITER.join([base_url, gid_path])
             # Read XML & create dataset
-            game = Game.read_xml(gid_url, self.parser, timestamp, MlbAm._get_game_number(gid_path))
-            players = Players.read_xml(gid_url, self.parser, game)
-            innings = Inning.read_xml(gid_url, self.parser, game, players)
+            try:
+                game = Game.read_xml(gid_url, self.parser, timestamp, MlbAm._get_game_number(gid_path))
+                players = Players.read_xml(gid_url, self.parser, game)
+                innings = Inning.read_xml(gid_url, self.parser, game, players)
+            except MlbAmHttpNotFound as e:
+                logging.warning(e.msg)
+                continue
 
             # append a dataset
             games.append(game.row())
@@ -97,6 +102,7 @@ class MlbAm(object):
                 {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
         ):
             self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
+        time.sleep(2)
 
         logging.info('-<- Game data download end({year}/{month}/{day})'.format(**timestamp_params))
 
@@ -196,17 +202,6 @@ class MlbAm(object):
         logging.info('-<- MLBAM dataset download end')
 
 
-class MlbAmException(Exception):
-
-    def __init__(self, msg):
-        Exception.__init__(self, msg)
-        self.msg = msg
-
-
-class MlbAmBadParameter(MlbAmException):
-    pass
-
-
 @click.command()
 @click.option('--start', '-s', required=True, help='Start Day(YYYYMMDD)')
 @click.option('--end', '-e', required=True, help='End Day(YYYYMMDD)')
@@ -219,6 +214,7 @@ def scrape(start, end, out):
     :param out: Output directory(default:"../output/mlb")
     """
     try:
+        logging.basicConfig(level=logging.WARNING)
         MlbAm.scrape(start, end, out)
     except MlbAmBadParameter as e:
         raise click.BadParameter(e)
