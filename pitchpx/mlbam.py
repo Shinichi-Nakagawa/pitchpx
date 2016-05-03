@@ -214,7 +214,7 @@ def scrape(start, end, out):
     :param out: Output directory(default:"../output/mlb")
     """
     try:
-        logging.basicConfig(level=logging.WARNING)
+        logging.basicConfig(level=logging.DEBUG)
         MlbAm.scrape(start, end, out)
     except MlbAmBadParameter as e:
         raise click.BadParameter(e)
