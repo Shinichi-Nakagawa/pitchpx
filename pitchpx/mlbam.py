@@ -17,6 +17,7 @@ from pitchpx.mlbam_util import MlbamUtil, MlbAmException, MlbAmHttpNotFound, Mlb
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.inning import Inning, AtBat, Pitch
+from pitchpx.service.google import GoogleDrive
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -29,13 +30,14 @@ class MlbAm(object):
     PAGE_URL_GAME_DAY = 'year_{year}/month_{month}/day_{day}'
     PAGE_URL_GAME_PREFIX = 'gid_{year}_{month}_{day}_.*'
 
-    def __init__(self, base_dir, output, days=[], setting_file='setting.yml'):
+    def __init__(self, base_dir, output, days=[], setting_file='setting.yml', client_secret_file=None):
         """
         MLBAM Data set scrape
         :param base_dir: Base directory
         :param output: Output directory
         :param days: Game Days(datetime list)
         :param setting_file: setteing file(yml)
+        :param client_secret_file: Google Drive settings file
         """
         setting = yaml.load(open(self.DELIMITER.join([base_dir, setting_file]), 'r'))
         self.url = setting['mlb']['url']
@@ -44,6 +46,9 @@ class MlbAm(object):
         self.encoding = setting['config']['encoding']
         self.output = output
         self.days = days
+        self.client_secret_file = client_secret_file
+        if self.client_secret_file:
+            self.gc_client = GoogleDrive(client_secret_file, dict(setting['google_drive']))
 
     def download(self):
         """
@@ -173,12 +178,13 @@ class MlbAm(object):
         return days
 
     @classmethod
-    def scrape(cls, start, end, output):
+    def scrape(cls, start, end, output, client_secret_file=None):
         """
         Scrape a MLBAM Data
         :param start: Start Day(YYYYMMDD)
         :param end: End Day(YYYYMMDD)
         :param output: Output directory
+        :param client_secret_file: Google API client_secret file(JSON)
         """
         # Logger setting
         logging.basicConfig(
@@ -197,7 +203,9 @@ class MlbAm(object):
 
         # Download
         logging.info('->- MLBAM dataset download start')
-        mlb = MlbAm(os.path.dirname(os.path.abspath(__file__)), output, cls._days(start, end))
+        mlb = MlbAm(os.path.dirname(
+            os.path.abspath(__file__)), output, cls._days(start, end), client_secret_file=client_secret_file
+        )
         mlb.download()
         logging.info('-<- MLBAM dataset download end')
 
@@ -206,16 +214,20 @@ class MlbAm(object):
 @click.option('--start', '-s', required=True, help='Start Day(YYYYMMDD)')
 @click.option('--end', '-e', required=True, help='End Day(YYYYMMDD)')
 @click.option('--out', '-o', required=True, default='../output/mlb', help='Output directory(default:"./output/mlb")')
-def scrape(start, end, out):
+@click.option(
+    '--client_secret_file', '-c', required=False, help='Upload to Google Drive(input to client_secret.json file Path)'
+)
+def scrape(start, end, out, client_secret_file):
     """
     Scrape a MLBAM Data
     :param start: Start Day(YYYYMMDD)
     :param end: End Day(YYYYMMDD)
     :param out: Output directory(default:"../output/mlb")
+    :param client_secret_file: Upload to Google Drive
     """
     try:
-        logging.basicConfig(level=logging.DEBUG)
-        MlbAm.scrape(start, end, out)
+        logging.basicConfig(level=logging.INFO)
+        MlbAm.scrape(start, end, out, client_secret_file)
     except MlbAmBadParameter as e:
         raise click.BadParameter(e)
 

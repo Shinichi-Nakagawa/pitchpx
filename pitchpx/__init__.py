@@ -12,7 +12,10 @@ __author__ = 'Shinichi Nakagawa'
 @click.option('--start', '-s', required=True, help='Start Day(YYYYMMDD)')
 @click.option('--end', '-e', required=True, help='End Day(YYYYMMDD)')
 @click.option('--out', '-o', required=True, default='.', help='Output directory(default:".")')
-def main(start, end, out):
+@click.option(
+    '--client_secret_file', '-c', required=False, help='Upload to Google Drive(input to client_secret.json file Path)'
+)
+def main(start, end, out, client_secret_file):
     """
     Scrape a MLBAM Data
     :param start: Start Day(YYYYMMDD)
@@ -21,6 +24,6 @@ def main(start, end, out):
     """
     try:
         logging.basicConfig(level=logging.WARNING)
-        MlbAm.scrape(start, end, out)
+        MlbAm.scrape(start, end, out, client_secret_file)
     except MlbAmBadParameter as e:
         raise click.BadParameter(e)

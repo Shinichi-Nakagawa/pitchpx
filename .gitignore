@@ -55,3 +55,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Google SDK OAuth2 settings
+client_secret*.json
+*.pem

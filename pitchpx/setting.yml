@@ -5,4 +5,11 @@ config:
   extension: csv
 mlb:
   url: http://gd2.mlb.com/components/game/mlb
-
+google_drive:
+  mime_type: text/css
+  app_name: pitchpx
+  drive: mlbam/pitchpx
+  credential_dir: /tmp/.credentials/
+  credential_file: pitchpx-google-drive.json
+  scopes:
+    - https://www.googleapis.com/auth/devstorage.read_write
