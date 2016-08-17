@@ -117,7 +117,10 @@ class MlbAm(object):
         if game_number.isdigit():
             return int(game_number)
         else:
-            raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
+            for char in reversed(gid_path):
+                if char.isdigit():
+                    return int(char)
+        raise MlbAmException('Illegal Game Number:(gid:{gid_path})'.format(gid_path))
 
     def _write_csv(self, datasets, filename):
         """
