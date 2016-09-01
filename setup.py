@@ -17,7 +17,7 @@ def read_file(filename):
 
 setup(
     name='pitchpx',
-    version='2.4.1',
+    version='2.4.2',
     description='Getting Baseball data for MLBAM Gameday dataset',
     long_description=read_file('README.rst'),
     author='Shinichi Nakagawa',

@@ -35,10 +35,10 @@ class Players(object):
             :param retro_game_id: Retrosheet Game id
             """
             self.retro_game_id = retro_game_id
-            self.id = soup['id']
-            self.first = soup['first']
-            self.last = soup['last']
-            self.position = soup['position']
+            self.id = soup.get('id')
+            self.first = soup.get('first')
+            self.last = soup.get('last')
+            self.position = soup.get('position')
 
         def row(self):
             """
@@ -102,13 +102,13 @@ class Players(object):
             if Players.isdigit(soup['num']):
                 self.num = int(soup['num'])
             self.box_name = soup['boxname']
-            self.rl = soup['rl']
-            self.bats = soup['bats']
-            self.status = soup['status']
-            self.team_abbrev = soup['team_abbrev']
-            self.team_id = soup['team_id']
-            self.parent_team_abbrev = soup['parent_team_abbrev']
-            self.parent_team_id = soup['parent_team_id']
+            self.rl = soup.get('rl')
+            self.bats = soup.get('bats')
+            self.status = soup.get('status')
+            self.team_abbrev = soup.get('team_abbrev')
+            self.team_id = soup.get('team_id')
+            self.parent_team_abbrev = soup.get('parent_team_abbrev')
+            self.parent_team_id = soup.get('parent_team_id')
             if 'avg' in soup.attrs and Players.isdigit(soup['avg']):
                 self.avg = float(soup['avg'])
             if 'hr' in soup.attrs and Players.isdigit(soup['hr']):

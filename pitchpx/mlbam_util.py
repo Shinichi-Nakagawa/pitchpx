@@ -65,7 +65,7 @@ class MlbamUtil(object):
         :return: attribute value
         """
         if key in soup.attrs:
-            return soup[key]
+            return soup.get(key)
         return unknown
 
     @classmethod
@@ -79,7 +79,8 @@ class MlbamUtil(object):
         :return: (data_type)attribute value
         """
         value = cls.get_attribute(soup, key, unknown)
-        if value != unknown:
+
+        if value and value != unknown:
             return data_type(value)
         return unknown
 
