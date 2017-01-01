@@ -16,6 +16,7 @@ import time
 from pitchpx.mlbam_util import MlbamUtil, MlbAmException, MlbAmHttpNotFound, MlbAmBadParameter
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
+from pitchpx.game.boxscore import BoxScore
 from pitchpx.game.inning import Inning, AtBat, Pitch
 
 __author__ = 'Shinichi Nakagawa'
@@ -59,6 +60,7 @@ class MlbAm(object):
         """
         games, atbats, pitches = [], [], []
         rosters, coaches, umpires = [], [], []
+        boxscore = []
         timestamp_params = {
             'year': str(timestamp.year),
             'month': str(timestamp.month).zfill(2),
@@ -79,6 +81,7 @@ class MlbAm(object):
                 game = Game.read_xml(gid_url, self.parser, timestamp, MlbAm._get_game_number(gid_path))
                 players = Players.read_xml(gid_url, self.parser, game)
                 innings = Inning.read_xml(gid_url, self.parser, game, players)
+                boxscore = BoxScore.read_xml(gid_url, self.parser, game, players)
             except MlbAmHttpNotFound as e:
                 logging.warning(e.msg)
                 continue
@@ -100,6 +103,7 @@ class MlbAm(object):
                 {'datasets': umpires, 'filename': Players.Umpire.DOWNLOAD_FILE_NAME},
                 {'datasets': atbats, 'filename': AtBat.DOWNLOAD_FILE_NAME},
                 {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
+                {'datasets': boxscore, 'filename': BoxScore.DOWNLOAD_FILE_NAME},
         ):
             self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
         time.sleep(2)
