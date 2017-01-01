@@ -1793,6 +1793,10 @@ class TestBoxScore(TestCase):
         self.assertEqual(boxscore.retro_game_id, 'OAK201304290')
         self.assertEqual(boxscore.home_team_id, 'oak')
         self.assertEqual(boxscore.away_team_id, 'ana')
+        self.assertEqual(len(boxscore.home_batting), 21)
+        self.assertEqual(len(boxscore.away_batting), 19)
+        self.assertEqual(len(boxscore.home_pitching), 8)
+        self.assertEqual(len(boxscore.away_pitching), 8)
 
 
 if __name__ == '__main__':

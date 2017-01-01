@@ -60,7 +60,7 @@ class MlbAm(object):
         """
         games, atbats, pitches = [], [], []
         rosters, coaches, umpires = [], [], []
-        boxscore = []
+        boxscores = []
         timestamp_params = {
             'year': str(timestamp.year),
             'month': str(timestamp.month).zfill(2),
@@ -93,6 +93,7 @@ class MlbAm(object):
             umpires.extend([umpire.row() for umpire in players.umpires.values()])
             atbats.extend(innings.atbats)
             pitches.extend(innings.pitches)
+            boxscores.append(boxscore.row())
 
         # writing csv
         day = "".join([timestamp_params['year'], timestamp_params['month'], timestamp_params['day']])
@@ -103,7 +104,7 @@ class MlbAm(object):
                 {'datasets': umpires, 'filename': Players.Umpire.DOWNLOAD_FILE_NAME},
                 {'datasets': atbats, 'filename': AtBat.DOWNLOAD_FILE_NAME},
                 {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
-                {'datasets': boxscore, 'filename': BoxScore.DOWNLOAD_FILE_NAME},
+                {'datasets': boxscores, 'filename': BoxScore.DOWNLOAD_FILE_NAME},
         ):
             self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
         time.sleep(2)

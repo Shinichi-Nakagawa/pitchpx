@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
+
 from collections import OrderedDict
 from pitchpx.mlbam_util import MlbamUtil, MlbamConst
 
@@ -18,10 +20,10 @@ class BoxScore(object):
     retro_game_id = MlbamConst.UNKNOWN_FULL
     home_team_id = MlbamConst.UNKNOWN_FULL
     away_team_id = MlbamConst.UNKNOWN_FULL
-    home_pitchings = []
-    home_battings = []
-    away_pitchings = []
-    away_battings = []
+    home_pitching = []
+    home_batting = []
+    away_pitching = []
+    away_batting = []
 
     def __init__(self, game, players):
         """
@@ -40,6 +42,22 @@ class BoxScore(object):
         row['retro_game_id'] = self.retro_game_id
         row['home_team_id'] = self.home_team_id
         row['away_team_id'] = self.away_team_id
+        for b in self.home_batting:
+            if not b['starting']:
+                continue
+            row['home_lineup_{bo}_id'.format(**b)] = b.get('id')
+            row['home_lineup_{bo}_name'.format(**b)] = b.get('box_name')
+            row['home_lineup_{bo}_pos'.format(**b)] = b.get('pos')
+        row['home_batter'] = json.dumps(self.home_batting)
+        row['home_pitcher'] = json.dumps(self.home_pitching)
+        for b in self.away_batting:
+            if not b['starting']:
+                continue
+            row['away_lineup_{bo}_id'.format(**b)] = b.get('id')
+            row['away_lineup_{bo}_name'.format(**b)] = b.get('box_name')
+            row['away_lineup_{bo}_pos'.format(**b)] = b.get('pos')
+        row['away_batter'] = json.dumps(self.away_batting)
+        row['away_pitcher'] = json.dumps(self.away_pitching)
         return row
 
     @classmethod
@@ -64,14 +82,22 @@ class BoxScore(object):
         :param players: MLBAM Players object
         :return: pitchpx.box_score.box_score.BoxScore object
         """
+
+        def get_batting(soup, team_flag):
+            return soup.find('batting', attrs={'team_flag': team_flag})
+
+        def get_pitching(soup, team_flag):
+            return soup.find('pitching', attrs={'team_flag': team_flag})
+
         box_score = BoxScore(game, players)
+
         box_score.retro_game_id = game.retro_game_id
         box_score.home_team_id = game.home_team_id
         box_score.away_team_id = game.away_team_id
-        home_batting = soup.find('batting', attrs={'team_flag': 'home'})
-        away_batting = soup.find('batting', attrs={'team_flag': 'away'})
-        box_score.home_battings = [box_score._get_batter(b) for b in home_batting.find_all('batter')]
-        box_score.away_battings = [box_score._get_batter(b) for b in away_batting.find_all('batter')]
+        box_score.home_batting = [box_score._get_batter(b) for b in get_batting(soup, 'home').find_all('batter')]
+        box_score.away_batting = [box_score._get_batter(b) for b in get_batting(soup, 'away').find_all('batter')]
+        box_score.home_pitching = [box_score._get_pitcher(p) for p in get_pitching(soup, 'home').find_all('pitcher')]
+        box_score.away_pitching = [box_score._get_pitcher(p) for p in get_pitching(soup, 'away').find_all('pitcher')]
 
         return box_score
 
@@ -102,10 +128,29 @@ class BoxScore(object):
         :param batter: Beautifulsoup object(batter element)
         :return: batting order(1-9), starting member flg(True or False)
         """
-        bo = batter.get('bo', '000')
-        if bo == '000' or len(bo) != 3:
-            return MlbamConst.UNKNOWN_SHORT, MlbamConst.UNKNOWN_SHORT
+        bo = batter.get('bo', None)
+        if not bo or len(bo) != 3:
+            return False, False
         batting_order = bo[:1]
         starting = True if bo[1:3] == '00' else False
         return batting_order, starting
+
+    def _get_pitcher(self, pitcher):
+        """
+        get pitcher object
+        :param pitcher: Beautifulsoup object(pitcher element)
+        :return: pitcher(dict)
+        """
+        values = OrderedDict()
+        player = self.players.rosters.get(pitcher.get('id'))
+        values['pos'] = pitcher.get('pos', MlbamConst.UNKNOWN_SHORT)
+        values['id'] = pitcher.get('id', MlbamConst.UNKNOWN_SHORT)
+        values['first'] = player.first
+        values['last'] = player.last
+        values['box_name'] = player.box_name
+        values['rl'] = player.rl
+        values['bats'] = player.bats
+        values['out'] = pitcher.get('out', MlbamConst.UNKNOWN_SHORT)
+        values['bf'] = pitcher.get('bf', MlbamConst.UNKNOWN_SHORT)
+        return values
 
