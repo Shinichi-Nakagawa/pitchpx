@@ -83,21 +83,27 @@ class BoxScore(object):
         :return: pitchpx.box_score.box_score.BoxScore object
         """
 
-        def get_batting(soup, team_flag):
-            return soup.find('batting', attrs={'team_flag': team_flag})
+        def get_batter(soup, team_flag):
+            batting = soup.find('batting', attrs={'team_flag': team_flag})
+            if batting:
+                return batting.find_all('batter')
+            return []
 
-        def get_pitching(soup, team_flag):
-            return soup.find('pitching', attrs={'team_flag': team_flag})
+        def get_pitcher(soup, team_flag):
+            pitching = soup.find('pitching', attrs={'team_flag': team_flag})
+            if pitching:
+                return pitching.find_all('pitcher')
+            return []
 
         box_score = BoxScore(game, players)
 
         box_score.retro_game_id = game.retro_game_id
         box_score.home_team_id = game.home_team_id
         box_score.away_team_id = game.away_team_id
-        box_score.home_batting = [box_score._get_batter(b) for b in get_batting(soup, 'home').find_all('batter')]
-        box_score.away_batting = [box_score._get_batter(b) for b in get_batting(soup, 'away').find_all('batter')]
-        box_score.home_pitching = [box_score._get_pitcher(p) for p in get_pitching(soup, 'home').find_all('pitcher')]
-        box_score.away_pitching = [box_score._get_pitcher(p) for p in get_pitching(soup, 'away').find_all('pitcher')]
+        box_score.home_batting = [box_score._get_batter(b) for b in get_batter(soup, 'home')]
+        box_score.away_batting = [box_score._get_batter(b) for b in get_batter(soup, 'away')]
+        box_score.home_pitching = [box_score._get_pitcher(p) for p in get_pitcher(soup, 'home')]
+        box_score.away_pitching = [box_score._get_pitcher(p) for p in get_pitcher(soup, 'away')]
 
         return box_score
 
