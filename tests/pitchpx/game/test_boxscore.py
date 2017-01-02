@@ -1800,6 +1800,66 @@ class TestBoxScore(TestCase):
         self.assertEqual(len(boxscore.home_pitching), 8)
         self.assertEqual(len(boxscore.away_pitching), 8)
 
+    def test_get_batter(self):
+        """
+        Batter Profile
+        """
+        soup = BeautifulSoup(TestBoxScore.XML_BOXSCORE, 'lxml')
+        boxscore = BoxScore._generate_object(soup, self.game, self.players)
+        home_batters = soup.find('batting', attrs={'team_flag': 'home'}).find_all('batter')
+        crisp = boxscore._get_batter(home_batters[0])
+        self.assertEqual(crisp.get('bo'), '1')
+        self.assertEqual(crisp.get('pos'), 'CF')
+        self.assertEqual(crisp.get('id'), '424825')
+        self.assertEqual(crisp.get('first'), 'Coco')
+        self.assertEqual(crisp.get('last'), 'Crisp')
+        self.assertEqual(crisp.get('box_name'), 'Crisp')
+        self.assertEqual(crisp.get('rl'), 'R')
+        self.assertEqual(crisp.get('bats'), 'S')
+        self.assertTrue(crisp.get('starting'))
+
+        away_batters = soup.find('batting', attrs={'team_flag': 'away'}).find_all('batter')
+        shuck = boxscore._get_batter(away_batters[1])
+        self.assertEqual(shuck.get('bo'), '1')
+        self.assertEqual(shuck.get('pos'), 'LF')
+        self.assertEqual(shuck.get('id'), '543776')
+        self.assertEqual(shuck.get('first'), 'J.B.')
+        self.assertEqual(shuck.get('last'), 'Shuck')
+        self.assertEqual(shuck.get('box_name'), 'Shuck')
+        self.assertEqual(shuck.get('rl'), 'L')
+        self.assertEqual(shuck.get('bats'), 'L')
+        self.assertFalse(shuck.get('starting'))
+
+    def test_get_pitcher(self):
+        """
+        Pitcher Profile
+        """
+        soup = BeautifulSoup(TestBoxScore.XML_BOXSCORE, 'lxml')
+        boxscore = BoxScore._generate_object(soup, self.game, self.players)
+        home_pitchers = soup.find('pitching', attrs={'team_flag': 'home'}).find_all('pitcher')
+        straily = boxscore._get_pitcher(home_pitchers[0])
+        self.assertEqual(straily.get('pos'), 'P')
+        self.assertEqual(straily.get('id'), '573185')
+        self.assertEqual(straily.get('first'), 'Dan')
+        self.assertEqual(straily.get('last'), 'Straily')
+        self.assertEqual(straily.get('box_name'), 'Straily')
+        self.assertEqual(straily.get('rl'), 'R')
+        self.assertEqual(straily.get('bats'), 'R')
+        self.assertEqual(straily.get('out'), '14')
+        self.assertEqual(straily.get('bf'), '23')
+
+        away_pitchers = soup.find('pitching', attrs={'team_flag': 'away'}).find_all('pitcher')
+        enright = boxscore._get_pitcher(away_pitchers[7])
+        self.assertEqual(enright.get('pos'), 'P')
+        self.assertEqual(enright.get('id'), '446264')
+        self.assertEqual(enright.get('first'), 'Barry')
+        self.assertEqual(enright.get('last'), 'Enright')
+        self.assertEqual(enright.get('box_name'), 'Enright')
+        self.assertEqual(enright.get('rl'), 'R')
+        self.assertEqual(enright.get('bats'), 'R')
+        self.assertEqual(enright.get('out'), '5')
+        self.assertEqual(enright.get('bf'), '7')
+
     def test_get_batting_order_starting_flg(self):
         """
         Batting order number & starting flag
