@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
+
 from datetime import datetime as dt
 from bs4 import BeautifulSoup
 from unittest import TestCase, main
@@ -1786,7 +1788,7 @@ class TestBoxScore(TestCase):
 
     def test_generate_object(self):
         """
-        Inning row data
+        Box Score Data Test
         """
         soup = BeautifulSoup(TestBoxScore.XML_BOXSCORE, 'lxml')
         boxscore = BoxScore._generate_object(soup, self.game, self.players)
@@ -1797,6 +1799,38 @@ class TestBoxScore(TestCase):
         self.assertEqual(len(boxscore.away_batting), 19)
         self.assertEqual(len(boxscore.home_pitching), 8)
         self.assertEqual(len(boxscore.away_pitching), 8)
+
+    def test_get_batting_order_starting_flg(self):
+        """
+        Batting order number & starting flag
+        """
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': '100'})
+        self.assertEqual(bo, '1')
+        self.assertTrue(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': '201'})
+        self.assertEqual(bo, '2')
+        self.assertFalse(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': '310'})
+        self.assertEqual(bo, '3')
+        self.assertFalse(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': '400'})
+        self.assertEqual(bo, '4')
+        self.assertTrue(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': '5000'})
+        self.assertEqual(bo, False)
+        self.assertFalse(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': None})
+        self.assertEqual(bo, False)
+        self.assertFalse(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': '700'})
+        self.assertEqual(bo, '7')
+        self.assertTrue(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({'bo': 'U'})
+        self.assertEqual(bo, False)
+        self.assertFalse(starting)
+        bo, starting = BoxScore._get_batting_order_starting_flg({})
+        self.assertEqual(bo, False)
+        self.assertFalse(starting)
 
 
 if __name__ == '__main__':
