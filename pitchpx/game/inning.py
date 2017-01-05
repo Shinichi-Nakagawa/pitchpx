@@ -241,6 +241,60 @@ class AtBat(object):
         return atbat
 
 
+class InningAction(object):
+
+    DOWNLOAD_FILE_NAME = 'mlbam_action_{day}.{extension}'
+
+    @classmethod
+    def action(cls, action, game, rosters, inning_number, inning_id):
+        """
+        action data
+        :param action: action object(type:Beautifulsoup)
+        :param game: MLBAM Game object
+        :param rosters: Game Rosters
+        :param inning_number: Inning Number
+        :param inning_id: Inning Id(0:home 1:away)
+        """
+        player_mlbid = MlbamUtil.get_attribute_stats(action, 'player', str, MlbamConst.UNKNOWN_FULL)
+        player = rosters.get(player_mlbid)
+        act = OrderedDict()
+        act['retro_game_id'] = game.retro_game_id
+        act['year'] = game.timestamp.year
+        act['month'] = game.timestamp.month
+        act['day'] = game.timestamp.day
+        act['st_fl'] = game.st_fl
+        act['regseason_fl'] = game.regseason_fl
+        act['playoff_fl'] = game.playoff_fl
+        act['game_type'] = game.game_type
+        act['game_type_des'] = game.game_type_des
+        act['local_game_time'] = game.local_game_time
+        act['game_id'] = game.game_id
+        act['home_team_id'] = game.home_team_id
+        act['away_team_id'] = game.away_team_id
+        act['home_team_lg'] = game.home_team_lg
+        act['away_team_lg'] = game.away_team_lg
+        act['interleague_fl'] = game.interleague_fl
+        act['park_id'] = game.park_id
+        act['park_name'] = game.park_name
+        act['inning_number'] = inning_number
+        act['home_id'] = inning_id
+        act['park_location'] = game.park_loc
+        act['b'] = MlbamUtil.get_attribute_stats(action, 'b', int, 0)
+        act['s'] = MlbamUtil.get_attribute_stats(action, 's', int, 0)
+        act['o'] = MlbamUtil.get_attribute_stats(action, 'o', int, 0)
+        act['des'] = MlbamUtil.get_attribute_stats(action, 'des', str, MlbamConst.UNKNOWN_FULL)
+        act['event'] = MlbamUtil.get_attribute_stats(action, 'event', str, MlbamConst.UNKNOWN_FULL)
+        act['bat_mlbid'] = player_mlbid
+        act['bat_first_name'] = player.first
+        act['bat_last_name'] = player.last
+        act['bat_box_name'] = player.box_name
+        act['pitch'] = MlbamUtil.get_attribute_stats(action, 'pitch', int, 0)
+        act['event_num'] = MlbamUtil.get_attribute_stats(action, 'event_num', int, -1)
+        act['home_team_runs'] = MlbamUtil.get_attribute_stats(action, 'home_team_runs', int, 0)
+        act['away_team_runs'] = MlbamUtil.get_attribute_stats(action, 'away_team_runs', int, 0)
+        return act
+
+
 class Inning(object):
 
     DIRECTORY = 'inning'
@@ -255,6 +309,7 @@ class Inning(object):
     INNINGS[INNING_BOTTOM] = 1
     atbats = []
     pitches = []
+    actions = []
 
     def __init__(self, game, players):
         """
@@ -263,7 +318,7 @@ class Inning(object):
         """
         self.game = game
         self.players = players
-        self.atbats, self.pitches = [], []
+        self.atbats, self.pitches, self.actions = [], [], []
 
     @classmethod
     def read_xml(cls, url, markup, game, players):
@@ -291,6 +346,7 @@ class Inning(object):
                 if inning_soup is None:
                     break
                 innings._inning_events(inning_soup, inning_number, cls.INNINGS[inning_type], hit_location)
+                innings._inning_actions(inning_soup, inning_number, cls.INNINGS[inning_type])
         return innings
 
     @classmethod
@@ -313,6 +369,17 @@ class Inning(object):
                 'hit_y': MlbamUtil.get_attribute_stats(hip, 'y', float, None),
             }
         return hit_chart
+
+    def _inning_actions(self, soup, inning_number, inning_id):
+        """
+        Inning Actions.
+        :param soup: Beautifulsoup object
+        :param inning_number: Inning Number
+        :param inning_id: Inning Id(0:home, 1:away)
+        """
+        # at bat(batter box data) & pitching data
+        for act in soup.find_all('action'):
+            self.actions.append(InningAction.action(act, self.game, self.players.rosters, inning_number, inning_id))
 
     def _inning_events(self, soup, inning_number, inning_id, hit_location):
         """
