@@ -92,7 +92,7 @@ class TestInning(TestCase):
 <umpires><umpire position="home" name="Jeff Nelson" id="427362" first="Jeff" last="Nelson"/><umpire position="first" name="Laz Diaz" id="427113" first="Laz" last="Diaz"/><umpire position="second" name="Chris Guccione" id="427197" first="Chris" last="Guccione"/><umpire position="third" name="Cory Blaser" id="484183" first="Cory" last="Blaser"/></umpires></game>
     """
     XML_ATBAT_DATASET = """
-<atbat num="5" b="0" s="2" o="1" start_tfs="195044" start_tfs_zulu="2015-08-12T19:50:44Z" batter="572122" stand="L" b_height="6-0" pitcher="592332" p_throws="R" des="Kyle Seager doubles (26) on a line drive to right fielder Gerardo Parra. " des_es="Kyle Seager pega doble (26) con línea a jardinero derecho Gerardo Parra. " event_num="42" event="Double" event_es="Doble" play_guid="6040a271-f03e-4e9f-8271-1da1d548601d" home_team_runs="0" away_team_runs="0">
+<atbat num="5" b="0" s="2" o="1" start_tfs="195044" start_tfs_zulu="2015-08-12T19:50:44Z" batter="572122" stand="L" b_height="6-0" pitcher="592332" p_throws="R" des="Kyle Seager doubles (26) on a line drive to right fielder Gerardo Parra. " des_es="Kyle Seager pega doble (26) con línea a jardinero derecho Gerardo Parra. " event_num="42" event="Double" event_es="Doble" play_guid="6040a271-f03e-4e9f-8271-1da1d548601d" home_team_runs="3" away_team_runs="1">
 <pitch des="Called Strike" des_es="Strike cantado" id="37" type="S" tfs="195049" tfs_zulu="2015-08-12T19:50:49Z" x="147.3" y="192.93" event_num="37" sv_id="150812_125236" play_guid="89dd19e9-37eb-41c0-894f-684d81c32870" start_speed="77.7" end_speed="71.6" sz_top="3.35" sz_bot="1.43" pfx_x="2.6" pfx_z="-3.42" px="-0.795" pz="1.698" x0="-2.681" y0="50.0" z0="6.338" vx0="3.464" vy0="-113.936" vz0="-2.206" ax="3.368" ay="23.771" az="-36.529" break_y="23.8" break_angle="-6.1" break_length="11.7" pitch_type="SL" type_confidence="2.000" zone="13" nasty="84" spin_dir="37.716" spin_rate="701.020" cc="" mt=""/>
 <pitch des="Foul" des_es="Foul" id="38" type="S" tfs="195106" tfs_zulu="2015-08-12T19:51:06Z" x="132.25" y="185.81" event_num="38" sv_id="150812_125252" play_guid="3517df0c-b8e2-4dfd-86d4-b17026206cf8" start_speed="95.5" end_speed="86.8" sz_top="3.35" sz_bot="1.43" pfx_x="-5.04" pfx_z="9.72" px="-0.4" pz="1.962" x0="-2.558" y0="50.0" z0="5.909" vx0="7.697" vy0="-139.569" vz0="-8.395" ax="-9.785" ay="35.777" az="-13.215" break_y="23.7" break_angle="27.2" break_length="3.6" pitch_type="FF" type_confidence="2.000" zone="7" nasty="38" spin_dir="207.298" spin_rate="2217.735" cc="" mt=""/>
 <pitch des="Foul" des_es="Foul" id="39" type="S" tfs="195129" tfs_zulu="2015-08-12T19:51:29Z" x="127.67" y="164.5" event_num="39" sv_id="150812_125314" play_guid="6bc872ae-6be2-402e-ac22-3830c6c1f9ef" start_speed="93.9" end_speed="84.8" sz_top="3.35" sz_bot="1.43" pfx_x="-5.35" pfx_z="10.07" px="-0.28" pz="2.751" x0="-2.577" y0="50.0" z0="6.03" vx0="8.035" vy0="-137.335" vz0="-6.343" ax="-10.002" ay="36.456" az="-13.269" break_y="23.7" break_angle="27.9" break_length="3.7" pitch_type="FF" type_confidence="2.000" zone="1" nasty="35" spin_dir="207.880" spin_rate="2259.371" cc="" mt=""/>
@@ -188,6 +188,9 @@ class TestInning(TestCase):
         self.assertEqual(ab['event_cd'], 21)
         self.assertEqual(ab['hit_x'], 211.50)
         self.assertEqual(ab['hit_y'], 111.51)
+        self.assertEqual(ab['event_num'], 42)
+        self.assertEqual(ab['home_team_runs'], 3)
+        self.assertEqual(ab['away_team_runs'], 1)
 
     def test_atbat_result(self):
         """
@@ -305,6 +308,7 @@ class TestInning(TestCase):
         self.assertEqual(pitch['spin_dir'], 230.964)
         self.assertEqual(pitch['spin_rate'], 1190.061)
         self.assertEqual(pitch['sv_id'], '150812_125336')
+        self.assertEqual(pitch['event_num'], 40)
 
 if __name__ == '__main__':
     main()

@@ -118,6 +118,7 @@ class Pitch(object):
         pitching['spin_dir'] = MlbamUtil.get_attribute_stats(pitch, 'spin_dir', float, None)
         pitching['spin_rate'] = MlbamUtil.get_attribute_stats(pitch, 'spin_rate', float, None)
         pitching['sv_id'] = MlbamUtil.get_attribute_stats(pitch, 'sv_id', str, None)
+        pitching['event_num'] = MlbamUtil.get_attribute_stats(pitch, 'event_num', int, -1)
         return pitching
 
 
@@ -217,6 +218,9 @@ class AtBat(object):
         atbat['event_cd'] = event_cd
         atbat['hit_x'] = location.get('hit_x', None)
         atbat['hit_y'] = location.get('hit_y', None)
+        atbat['event_num'] = MlbamUtil.get_attribute_stats(ab, 'event_num', int, -1)
+        atbat['home_team_runs'] = MlbamUtil.get_attribute_stats(ab, 'home_team_runs', int, 0)
+        atbat['away_team_runs'] = MlbamUtil.get_attribute_stats(ab, 'away_team_runs', int, 0)
         return atbat
 
     @classmethod
