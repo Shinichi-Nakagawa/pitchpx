@@ -284,10 +284,10 @@ class InningAction(object):
         act['o'] = MlbamUtil.get_attribute_stats(action, 'o', int, 0)
         act['des'] = MlbamUtil.get_attribute_stats(action, 'des', str, MlbamConst.UNKNOWN_FULL)
         act['event'] = MlbamUtil.get_attribute_stats(action, 'event', str, MlbamConst.UNKNOWN_FULL)
-        act['bat_mlbid'] = player_mlbid
-        act['bat_first_name'] = player.first
-        act['bat_last_name'] = player.last
-        act['bat_box_name'] = player.box_name
+        act['player_mlbid'] = player_mlbid
+        act['player_first_name'] = player.first
+        act['player_last_name'] = player.last
+        act['player_box_name'] = player.box_name
         act['pitch'] = MlbamUtil.get_attribute_stats(action, 'pitch', int, 0)
         act['event_num'] = MlbamUtil.get_attribute_stats(action, 'event_num', int, -1)
         act['home_team_runs'] = MlbamUtil.get_attribute_stats(action, 'home_team_runs', int, 0)
