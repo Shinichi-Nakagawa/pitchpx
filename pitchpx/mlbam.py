@@ -17,7 +17,7 @@ from pitchpx.mlbam_util import MlbamUtil, MlbAmException, MlbAmHttpNotFound, Mlb
 from pitchpx.game.game import Game
 from pitchpx.game.players import Players
 from pitchpx.game.boxscore import BoxScore
-from pitchpx.game.inning import Inning, AtBat, Pitch
+from pitchpx.game.inning import Inning, AtBat, Pitch, InningAction
 
 __author__ = 'Shinichi Nakagawa'
 
@@ -60,7 +60,7 @@ class MlbAm(object):
         """
         games, atbats, pitches = [], [], []
         rosters, coaches, umpires = [], [], []
-        boxscores = []
+        boxscores, actions = [], []
         timestamp_params = {
             'year': str(timestamp.year),
             'month': str(timestamp.month).zfill(2),
@@ -93,6 +93,7 @@ class MlbAm(object):
             umpires.extend([umpire.row() for umpire in players.umpires.values()])
             atbats.extend(innings.atbats)
             pitches.extend(innings.pitches)
+            actions.extend(innings.actions)
             boxscores.append(boxscore.row())
 
         # writing csv
@@ -105,6 +106,7 @@ class MlbAm(object):
                 {'datasets': atbats, 'filename': AtBat.DOWNLOAD_FILE_NAME},
                 {'datasets': pitches, 'filename': Pitch.DOWNLOAD_FILE_NAME},
                 {'datasets': boxscores, 'filename': BoxScore.DOWNLOAD_FILE_NAME},
+                {'datasets': actions, 'filename': InningAction.DOWNLOAD_FILE_NAME},
         ):
             self._write_csv(params['datasets'], params['filename'].format(day=day, extension=self.extension))
         time.sleep(2)

@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import logging
 from collections import OrderedDict
 from pitchpx.mlbam_util import MlbamUtil, MlbamConst
-from pitchpx.game.game import Game
 from pitchpx.baseball.retrosheet import RetroSheet
 
 __author__ = 'Shinichi Nakagawa'
@@ -285,9 +284,16 @@ class InningAction(object):
         act['des'] = MlbamUtil.get_attribute_stats(action, 'des', str, MlbamConst.UNKNOWN_FULL)
         act['event'] = MlbamUtil.get_attribute_stats(action, 'event', str, MlbamConst.UNKNOWN_FULL)
         act['player_mlbid'] = player_mlbid
-        act['player_first_name'] = player.first
-        act['player_last_name'] = player.last
-        act['player_box_name'] = player.box_name
+        try:
+            act['player_first_name'] = player.first
+            act['player_last_name'] = player.last
+            act['player_box_name'] = player.box_name
+        except AttributeError as e:
+            logging.error('Attribute Error(retro_game_id:{retro_game_id} player_mlbid:{player_mlbid})'
+                          .format(**{'retro_game_id': game.retro_game_id, 'player_mlbid': player_mlbid}))
+            act['player_first_name'] = MlbamConst.UNKNOWN_FULL
+            act['player_last_name'] = MlbamConst.UNKNOWN_FULL
+            act['player_box_name'] = MlbamConst.UNKNOWN_FULL
         act['pitch'] = MlbamUtil.get_attribute_stats(action, 'pitch', int, 0)
         act['event_num'] = MlbamUtil.get_attribute_stats(action, 'event_num', int, -1)
         act['home_team_runs'] = MlbamUtil.get_attribute_stats(action, 'home_team_runs', int, 0)
