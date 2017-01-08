@@ -36,7 +36,21 @@ class BoxScore(object):
     def row(self):
         """
         Box Score Dataset(Row)
-        :return: boxscore dataset(dict)
+        :return: {
+            'retro_game_id': Retrosheet Game id
+            'home_team_id': Home Team Id
+            'away_team_id': Away Team Id
+            'home_lineup_[1-9]_id': Starting Member Player Id(Home)
+            'home_lineup_[1-9]_name': Starting Member Player Box Name(Home)
+            'home_lineup_[1-9]_pos': Starting Member Player Position(Home)
+            'home_batter': Home Batters(JSON)
+            'home_batter': Home Pitchers(JSON)
+            'away_lineup_[1-9]_id': Starting Member Player Id(Away)
+            'away_lineup_[1-9]_name': Starting Member Player Box Name(Away)
+            'away_lineup_[1-9]_pos': Starting Member Player Position(Away)
+            'away_batter': Away Batters(JSON)
+            'away_batter': Away Pitchers(JSON)
+        }
         """
         row = OrderedDict()
         row['retro_game_id'] = self.retro_game_id
