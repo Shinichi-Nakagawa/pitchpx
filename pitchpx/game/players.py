@@ -20,7 +20,7 @@ class Players(object):
 
     class YakyuMin(object):
         """
-        Baseball people(Japanese "やきう民")
+        Baseball Human Base Class
         """
         retro_game_id = MlbamConst.UNKNOWN_FULL
         id = MlbamConst.UNKNOWN_FULL
@@ -35,15 +35,21 @@ class Players(object):
             :param retro_game_id: Retrosheet Game id
             """
             self.retro_game_id = retro_game_id
-            self.id = soup['id']
-            self.first = soup['first']
-            self.last = soup['last']
-            self.position = soup['position']
+            self.id = soup.get('id')
+            self.first = soup.get('first')
+            self.last = soup.get('last')
+            self.position = soup.get('position')
 
         def row(self):
             """
             Yakyu-Min Dataset(Row)
-            :return: Yakyu-Min dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+            }
             """
             row = OrderedDict()
             row['retro_game_id'] = self.retro_game_id
@@ -102,13 +108,13 @@ class Players(object):
             if Players.isdigit(soup['num']):
                 self.num = int(soup['num'])
             self.box_name = soup['boxname']
-            self.rl = soup['rl']
-            self.bats = soup['bats']
-            self.status = soup['status']
-            self.team_abbrev = soup['team_abbrev']
-            self.team_id = soup['team_id']
-            self.parent_team_abbrev = soup['parent_team_abbrev']
-            self.parent_team_id = soup['parent_team_id']
+            self.rl = soup.get('rl')
+            self.bats = soup.get('bats')
+            self.status = soup.get('status')
+            self.team_abbrev = soup.get('team_abbrev')
+            self.team_id = soup.get('team_id')
+            self.parent_team_abbrev = soup.get('parent_team_abbrev')
+            self.parent_team_id = soup.get('parent_team_id')
             if 'avg' in soup.attrs and Players.isdigit(soup['avg']):
                 self.avg = float(soup['avg'])
             if 'hr' in soup.attrs and Players.isdigit(soup['hr']):
@@ -129,7 +135,30 @@ class Players(object):
         def row(self):
             """
             Player's Dataset(Row)
-            :return: Player's dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+                'num': Unique Number in Game
+                'box_name': At Bat Name
+                'rl': Throw(R or L)
+                'bats': Batting Position(R or L or S)
+                'status': A(Active) or Other
+                'team_abbrev': Team Name
+                'team_id': Team Id
+                'parent_team_abbrev': Base Team Name
+                'parent_team_id': Base Team Id
+                'avg': Batting Average
+                'hr': Home Run
+                'rbi': RBI
+                'wins': Pitched Win
+                'lose': Pithced Lose
+                'era': ERA
+                'bat_order': Batting Order num(Starting Member Only)
+                'game_position': Game Position(Starting Member Only)
+            }
             """
             row = super().row()
             row['num'] = self.num
@@ -177,7 +206,16 @@ class Players(object):
         def row(self):
             """
             Coach Dataset(Row)
-            :return: Coach dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+                'num': Unique Number in Game
+                'team_id': Team Id
+                'team_name': Team Name
+            }
             """
             row = super().row()
             row['num'] = self.num
@@ -205,7 +243,14 @@ class Players(object):
         def row(self):
             """
             Umpire Dataset(Row)
-            :return: Umpire dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+                'name': At Bat Name
+            }
             """
             row = super().row()
             row['name'] = self.name

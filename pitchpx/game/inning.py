@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import logging
 from collections import OrderedDict
 from pitchpx.mlbam_util import MlbamUtil, MlbamConst
-from pitchpx.game.game import Game
 from pitchpx.baseball.retrosheet import RetroSheet
 
 __author__ = 'Shinichi Nakagawa'
@@ -31,12 +30,90 @@ class Pitch(object):
     def row(cls, pitch, pa, pitch_list, ball_tally, strike_tally):
         """
         Pitching Result
+        Pitch f/x fields: https://fastballs.wordpress.com/category/pitchfx-glossary/
         :param pitch: pitch object(type:Beautifulsoup)
         :param pa: At bat data for pa(dict)
         :param pitch_list: Pitching
         :param ball_tally: Ball telly
         :param strike_tally: Strike telly
-        :return: row value(dict)
+        :return: {
+            'retro_game_id': Retrosheet Game id
+            'game_type': Game Type(S/R/F/D/L/W)
+            'game_type_des': Game Type Description
+            (Spring Training or Regular Season or Wild-card Game or Divisional Series or LCS or World Series)
+            'st_fl': Spring Training FLAG(T or F)
+            'regseason_fl': Regular Season FLAG(T or F)
+            'playoff_fl': Play Off Flag(T or F)
+            'local_game_time': Game Time(UTC -5)
+            'game_id': Game Id
+            'home_team_id': Home Team Id
+            'home_team_lg': Home Team league(AL or NL)
+            'away_team_id': Away Team Id
+            'away_team_lg': Away Team league(AL or NL)
+            'home_team_name': Home Team Name
+            'away_team_name': Away Team Name
+            'home_team_name_full': Home Team Name(Full Name)
+            'away_team_name_full': Away Team Name(Full Name)
+            'interleague_fl': Inter League Flag(T or F)
+            'park_id': Park Id
+            'park_name': Park Name
+            'park_loc': Park Location
+            'inning_number': Inning Number
+            'bat_home_id': Batter Id
+            'outs_ct': Out count
+            'pit_mlbid': Pitcher Id
+            'pit_first_name': Pitcher First Name
+            'pit_last_name': Pitcher Last Name
+            'pit_box_name': Pitcher Box name
+            'pit_hand_cd': Pitcher Throw Hand(R or L)
+            'bat_first_name': Batter First Name
+            'bat_last_name': Batter Last Name
+            'bat_box_name': Batter Box name
+            'ab_number': At Bat Sequence Number in Game
+            'start_bases': Bases(Before At Bat)
+            (___, 1__, 12_, 123, etc...)
+            'end_bases': Bases(After At Bat)
+            (___, 1__, 12_, 123, etc...)
+            'event_outs_ct': Event Out Count
+            'pa_ball_ct': Plate appearance Ball count
+            'pa_strike_ct': Plate appearance Strike count
+            'pitch_seq': Pitch Sequence(Strike or Ball) ex: B, SSB, BBSBS etc...
+            'pa_terminal_fl': Plate appearance Terminate Flag(T or F)
+            'pa_event_cd': Event Code for Retrosheet http://www.retrosheet.org/datause.txt
+            'pitch_res': Pitch Response(S or B or X) X = In Play
+            'pitch_des': Pitch Description
+            'pitch_id': Pitch Id
+            'x': Point for X(inches)
+            'y': Point for Y(inches)
+            'start_speed': The pitch speed(MPH) at the initial point
+            'end_speed': The pitch speed(MPH) at the current batters
+            'sz_top': The distance in feet from the ground to the top of the current batter’s
+            'sz_bot': The distance in feet from the ground to the bottom of the current batter’s
+            'pfx_x': The horizontal movement, in inches, of the pitch between the release point and home plate
+            'pfx_z': The vertical movement, in inches, of the pitch between the release point and home plate
+            'px': The left/right distance, in feet, of the pitch from the middle of the plate as it crossed home plate
+            'pz': The height of the pitch in feet as it crossed the front of home plate
+            'x0': The left/right distance, in feet, of the pitch, measured at the initial point
+            'y0': The distance in feet from home plate where the PITCHf/x system is set to measure the initial parameters
+            'z0': The height, in feet, of the pitch, measured at the initial point
+            'vx0': The velocity of the pitch, in feet per second, in three dimensions, measured at the initial point
+            'vy0': The velocity of the pitch, in feet per second, in three dimensions, measured at the initial point
+            'vz0': The velocity of the pitch, in feet per second, in three dimensions, measured at the initial point
+            'ax': The acceleration of the pitch, in feet per second per second, in three dimensions, measured at the initial point
+            'ay': The acceleration of the pitch, in feet per second per second, in three dimensions, measured at the initial point
+            'az': The acceleration of the pitch, in feet per second per second, in three dimensions, measured at the initial point
+            'break_y': The distance in feet from the ground to the top of the current batter’s
+            'break_angle': The angle, in degrees, from vertical to the straight line path from the release point to where the pitch crossed the front of home plate, as seen from the catcher’s/umpire’s perspective
+            'break_length': The measurement of the greatest distance, in inches, between the trajectory of the pitch at any point between the release point and the front of home plate
+            'pitch_type': Pitch Type
+            'pitch_type_seq': Pitch type Sequence, ex:FF|CU|FF
+            'type_confidence': Pitch type confidence
+            'zone': Pitch Zone
+            'spin_dir': Pitch Spin Dir
+            'spin_rate': Pitch Spin Rate
+            'sv_id': Pitch in the air(From Datetime_To Datetime)
+            'event_num': Event Sequence Number(atbat, pitch, action)
+        }
         """
         pitch_res = MlbamUtil.get_attribute_stats(pitch, 'type', str, MlbamConst.UNKNOWN_FULL)
         pitch_seq = [pitch['pitch_res'] for pitch in pitch_list]
@@ -118,6 +195,7 @@ class Pitch(object):
         pitching['spin_dir'] = MlbamUtil.get_attribute_stats(pitch, 'spin_dir', float, None)
         pitching['spin_rate'] = MlbamUtil.get_attribute_stats(pitch, 'spin_rate', float, None)
         pitching['sv_id'] = MlbamUtil.get_attribute_stats(pitch, 'sv_id', str, None)
+        pitching['event_num'] = MlbamUtil.get_attribute_stats(pitch, 'event_num', int, -1)
         return pitching
 
 
@@ -157,7 +235,54 @@ class AtBat(object):
         :param pitch_list: Pitching
         :param out_ct: out count
         :param hit_location: Hitlocation data(dict)
-        :return: pa value(dict)
+        :return: {
+            'retro_game_id': Retrosheet Game id
+            'game_type': Game Type(S/R/F/D/L/W)
+            'game_type_des': Game Type Description
+            (Spring Training or Regular Season or Wild-card Game or Divisional Series or LCS or World Series)
+            'st_fl': Spring Training FLAG(T or F)
+            'regseason_fl': Regular Season FLAG(T or F)
+            'playoff_fl': Play Off Flag(T or F)
+            'local_game_time': Game Time(UTC -5)
+            'game_id': Game Id
+            'home_team_id': Home Team Id
+            'home_team_lg': Home Team league(AL or NL)
+            'away_team_id': Away Team Id
+            'away_team_lg': Away Team league(AL or NL)
+            'home_team_name': Home Team Name
+            'away_team_name': Away Team Name
+            'home_team_name_full': Home Team Name(Full Name)
+            'away_team_name_full': Away Team Name(Full Name)
+            'interleague_fl': Inter League Flag(T or F)
+            'park_id': Park Id
+            'park_name': Park Name
+            'park_loc': Park Location
+            'inning_number': Inning Number
+            'bat_home_id': Batter Id
+            'outs_ct': Out count
+            'pit_mlbid': Pitcher Id
+            'pit_first_name': Pitcher First Name
+            'pit_last_name': Pitcher Last Name
+            'pit_box_name': Pitcher Box name
+            'pit_hand_cd': Pitcher Throw Hand(R or L)
+            'bat_first_name': Batter First Name
+            'bat_last_name': Batter Last Name
+            'bat_box_name': Batter Box name
+            'ab_number': At Bat Sequence Number in Game
+            'start_bases': Bases(Before At Bat)
+            (___, 1__, 12_, 123, etc...)
+            'end_bases': Bases(After At Bat)
+            (___, 1__, 12_, 123, etc...)
+            'event_outs_ct': Event Out Count
+            'ab_des': At Bat Description
+            'event_tx': Event Text
+            'event_cd': Event Code for Retrosheet http://www.retrosheet.org/datause.txt
+            'hit_x': Hit Location(x)
+            'hit_y': Hit Location(y)
+            'event_num': Event Sequence Number(atbat, pitch, action)
+            'home_team_runs': Score(Home)
+            'away_team_runs': Score(Away)
+        }
         """
         ab_des = MlbamUtil.get_attribute_stats(ab, 'des', str, MlbamConst.UNKNOWN_FULL)
         event_tx = MlbamUtil.get_attribute_stats(ab, 'event', str, MlbamConst.UNKNOWN_FULL)
@@ -217,6 +342,9 @@ class AtBat(object):
         atbat['event_cd'] = event_cd
         atbat['hit_x'] = location.get('hit_x', None)
         atbat['hit_y'] = location.get('hit_y', None)
+        atbat['event_num'] = MlbamUtil.get_attribute_stats(ab, 'event_num', int, -1)
+        atbat['home_team_runs'] = MlbamUtil.get_attribute_stats(ab, 'home_team_runs', int, 0)
+        atbat['away_team_runs'] = MlbamUtil.get_attribute_stats(ab, 'away_team_runs', int, 0)
         return atbat
 
     @classmethod
@@ -237,6 +365,103 @@ class AtBat(object):
         return atbat
 
 
+class InningAction(object):
+
+    DOWNLOAD_FILE_NAME = 'mlbam_action_{day}.{extension}'
+
+    @classmethod
+    def action(cls, action, game, rosters, inning_number, inning_id):
+        """
+        action data
+        :param action: action object(type:Beautifulsoup)
+        :param game: MLBAM Game object
+        :param rosters: Game Rosters
+        :param inning_number: Inning Number
+        :param inning_id: Inning Id(0:home 1:away)
+        :return: {
+            'retro_game_id': Retrosheet Game id
+            'game_type': Game Type(S/R/F/D/L/W)
+            'game_type_des': Game Type Description
+            (Spring Training or Regular Season or Wild-card Game or Divisional Series or LCS or World Series)
+            'st_fl': Spring Training FLAG(T or F)
+            'regseason_fl': Regular Season FLAG(T or F)
+            'playoff_fl': Play Off Flag(T or F)
+            'local_game_time': Game Time(UTC -5)
+            'game_id': Game Id
+            'home_team_id': Home Team Id
+            'home_team_lg': Home Team league(AL or NL)
+            'away_team_id': Away Team Id
+            'away_team_lg': Away Team league(AL or NL)
+            'home_team_name': Home Team Name
+            'away_team_name': Away Team Name
+            'home_team_name_full': Home Team Name(Full Name)
+            'away_team_name_full': Away Team Name(Full Name)
+            'interleague_fl': Inter League Flag(T or F)
+            'park_id': Park Id
+            'park_name': Park Name
+            'park_loc': Park Location
+            'b': Ball Count
+            's': Strike count
+            'o': Out count
+            'des': Description
+            'event': Event Action
+            'player_mlbid': Player Id
+            'player_first_name': Player First Name
+            'player_last_name': Player Last Name
+            'player_box_name': Player Box Name
+            'pitch': Pitch count
+            'event_num': Event Sequence Number(atbat, pitch, action)
+            'home_team_runs': Score(Home)
+            'away_team_runs': Score(Away)
+        }
+        """
+        player_mlbid = MlbamUtil.get_attribute_stats(action, 'player', str, MlbamConst.UNKNOWN_FULL)
+        player = rosters.get(player_mlbid)
+        act = OrderedDict()
+        act['retro_game_id'] = game.retro_game_id
+        act['year'] = game.timestamp.year
+        act['month'] = game.timestamp.month
+        act['day'] = game.timestamp.day
+        act['st_fl'] = game.st_fl
+        act['regseason_fl'] = game.regseason_fl
+        act['playoff_fl'] = game.playoff_fl
+        act['game_type'] = game.game_type
+        act['game_type_des'] = game.game_type_des
+        act['local_game_time'] = game.local_game_time
+        act['game_id'] = game.game_id
+        act['home_team_id'] = game.home_team_id
+        act['away_team_id'] = game.away_team_id
+        act['home_team_lg'] = game.home_team_lg
+        act['away_team_lg'] = game.away_team_lg
+        act['interleague_fl'] = game.interleague_fl
+        act['park_id'] = game.park_id
+        act['park_name'] = game.park_name
+        act['inning_number'] = inning_number
+        act['home_id'] = inning_id
+        act['park_location'] = game.park_loc
+        act['b'] = MlbamUtil.get_attribute_stats(action, 'b', int, 0)
+        act['s'] = MlbamUtil.get_attribute_stats(action, 's', int, 0)
+        act['o'] = MlbamUtil.get_attribute_stats(action, 'o', int, 0)
+        act['des'] = MlbamUtil.get_attribute_stats(action, 'des', str, MlbamConst.UNKNOWN_FULL)
+        act['event'] = MlbamUtil.get_attribute_stats(action, 'event', str, MlbamConst.UNKNOWN_FULL)
+        act['player_mlbid'] = player_mlbid
+        try:
+            act['player_first_name'] = player.first
+            act['player_last_name'] = player.last
+            act['player_box_name'] = player.box_name
+        except AttributeError as e:
+            logging.error('Attribute Error(retro_game_id:{retro_game_id} player_mlbid:{player_mlbid})'
+                          .format(**{'retro_game_id': game.retro_game_id, 'player_mlbid': player_mlbid}))
+            act['player_first_name'] = MlbamConst.UNKNOWN_FULL
+            act['player_last_name'] = MlbamConst.UNKNOWN_FULL
+            act['player_box_name'] = MlbamConst.UNKNOWN_FULL
+        act['pitch'] = MlbamUtil.get_attribute_stats(action, 'pitch', int, 0)
+        act['event_num'] = MlbamUtil.get_attribute_stats(action, 'event_num', int, -1)
+        act['home_team_runs'] = MlbamUtil.get_attribute_stats(action, 'home_team_runs', int, 0)
+        act['away_team_runs'] = MlbamUtil.get_attribute_stats(action, 'away_team_runs', int, 0)
+        return act
+
+
 class Inning(object):
 
     DIRECTORY = 'inning'
@@ -251,6 +476,7 @@ class Inning(object):
     INNINGS[INNING_BOTTOM] = 1
     atbats = []
     pitches = []
+    actions = []
 
     def __init__(self, game, players):
         """
@@ -259,7 +485,7 @@ class Inning(object):
         """
         self.game = game
         self.players = players
-        self.atbats, self.pitches = [], []
+        self.atbats, self.pitches, self.actions = [], [], []
 
     @classmethod
     def read_xml(cls, url, markup, game, players):
@@ -287,6 +513,7 @@ class Inning(object):
                 if inning_soup is None:
                     break
                 innings._inning_events(inning_soup, inning_number, cls.INNINGS[inning_type], hit_location)
+                innings._inning_actions(inning_soup, inning_number, cls.INNINGS[inning_type])
         return innings
 
     @classmethod
@@ -309,6 +536,17 @@ class Inning(object):
                 'hit_y': MlbamUtil.get_attribute_stats(hip, 'y', float, None),
             }
         return hit_chart
+
+    def _inning_actions(self, soup, inning_number, inning_id):
+        """
+        Inning Actions.
+        :param soup: Beautifulsoup object
+        :param inning_number: Inning Number
+        :param inning_id: Inning Id(0:home, 1:away)
+        """
+        # at bat(batter box data) & pitching data
+        for act in soup.find_all('action'):
+            self.actions.append(InningAction.action(act, self.game, self.players.rosters, inning_number, inning_id))
 
     def _inning_events(self, soup, inning_number, inning_id, hit_location):
         """
