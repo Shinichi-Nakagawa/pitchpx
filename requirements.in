@@ -1,0 +1,8 @@
+beautifulsoup4
+click
+FormEncode
+lxml
+PyYAML
+requests
+coverage
+pytest
