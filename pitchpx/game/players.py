@@ -20,7 +20,7 @@ class Players(object):
 
     class YakyuMin(object):
         """
-        Baseball people(Japanese "やきう民")
+        Baseball Human Base Class
         """
         retro_game_id = MlbamConst.UNKNOWN_FULL
         id = MlbamConst.UNKNOWN_FULL
@@ -43,7 +43,13 @@ class Players(object):
         def row(self):
             """
             Yakyu-Min Dataset(Row)
-            :return: Yakyu-Min dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+            }
             """
             row = OrderedDict()
             row['retro_game_id'] = self.retro_game_id
@@ -129,7 +135,30 @@ class Players(object):
         def row(self):
             """
             Player's Dataset(Row)
-            :return: Player's dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+                'num': Unique Number in Game
+                'box_name': At Bat Name
+                'rl': Throw(R or L)
+                'bats': Batting Position(R or L or S)
+                'status': A(Active) or Other
+                'team_abbrev': Team Name
+                'team_id': Team Id
+                'parent_team_abbrev': Base Team Name
+                'parent_team_id': Base Team Id
+                'avg': Batting Average
+                'hr': Home Run
+                'rbi': RBI
+                'wins': Pitched Win
+                'lose': Pithced Lose
+                'era': ERA
+                'bat_order': Batting Order num(Starting Member Only)
+                'game_position': Game Position(Starting Member Only)
+            }
             """
             row = super().row()
             row['num'] = self.num
@@ -177,7 +206,16 @@ class Players(object):
         def row(self):
             """
             Coach Dataset(Row)
-            :return: Coach dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+                'num': Unique Number in Game
+                'team_id': Team Id
+                'team_name': Team Name
+            }
             """
             row = super().row()
             row['num'] = self.num
@@ -205,7 +243,14 @@ class Players(object):
         def row(self):
             """
             Umpire Dataset(Row)
-            :return: Umpire dataset(dict)
+            :return: {
+                'retro_game_id': Retrosheet Game id
+                'id': Player or Coach or Umpire Id
+                'first': First Name
+                'last': Last Name
+                'position': Position
+                'name': At Bat Name
+            }
             """
             row = super().row()
             row['name'] = self.name

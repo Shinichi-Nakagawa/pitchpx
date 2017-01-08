@@ -47,7 +47,29 @@ class Game(object):
     def row(self):
         """
         Game Dataset(Row)
-        :return: game dataset(dict)
+        :return: {
+            'retro_game_id': Retrosheet Game id
+            'game_type': Game Type(S/R/F/D/L/W)
+            'game_type_des': Game Type Description
+            (Spring Training or Regular Season or Wild-card Game or Divisional Series or LCS or World Series)
+            'st_fl': Spring Training FLAG(T or F)
+            'regseason_fl': Regular Season FLAG(T or F)
+            'playoff_fl': Play Off Flag(T or F)
+            'local_game_time': Game Time(UTC -5)
+            'game_id': Game Id
+            'home_team_id': Home Team Id
+            'home_team_lg': Home Team league(AL or NL)
+            'away_team_id': Away Team Id
+            'away_team_lg': Away Team league(AL or NL)
+            'home_team_name': Home Team Name
+            'away_team_name': Away Team Name
+            'home_team_name_full': Home Team Name(Full Name)
+            'away_team_name_full': Away Team Name(Full Name)
+            'interleague_fl': Inter League Flag(T or F)
+            'park_id': Park Id
+            'park_name': Park Name
+            'park_loc': Park Location
+        }
         """
         row = OrderedDict()
         row['retro_game_id'] = self.retro_game_id
