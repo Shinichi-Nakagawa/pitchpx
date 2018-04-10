@@ -269,7 +269,7 @@ class Players(object):
         :param game: MLBAM Game object
         :return: pitchpx.game.players.Players object
         """
-        return Players._read_objects(MlbamUtil.find_xml("/".join([url, cls.FILENAME]), markup) ,game)
+        return Players._read_objects(MlbamUtil.find_xml("".join([url, cls.FILENAME]), markup) ,game)
 
     @classmethod
     def _read_objects(cls, soup, game):
