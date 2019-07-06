@@ -7,7 +7,7 @@ Tools for Acquiring MLBAM Gameday dataset
 Requirement
 ====================
 
-python 3.3+(don't know about version < 3.2, sorry)
+python 3.5+(don't know about version < 3.5, sorry)
 
 Install
 ====================
