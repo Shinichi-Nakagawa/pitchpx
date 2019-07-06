@@ -78,9 +78,11 @@ class MlbamUtil(object):
         :param unknown: attribute key not exists value(default:None)
         :return: (data_type)attribute value
         """
-        value = cls.get_attribute(soup, key, unknown)
+        value = cls.get_attribute(soup, key, unknown=unknown)
 
-        if value and value != unknown:
+        if value in ('placeholder', 'None'):
+            return unknown
+        elif value and value != unknown:
             return data_type(value)
         return unknown
 
